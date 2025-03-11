@@ -1,0 +1,29 @@
+.card{
+    height: auto;
+    width: 600px;
+    padding: 20px;
+    background-color: cornsilk;
+    line-height: 2;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), 
+                -5px -5px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .correct-answer {
+    color: green !important;
+    font-weight: bold;
+  }
+  
+  .wrong-answer {
+    color: red !important;
+    font-weight: bold;
+  }
+  .pass-text {
+    color: green;
+    font-weight: bold;
+  }
+  .fail-text {
+    color: red;
+    font-weight: bold;
+  }
+  
+  

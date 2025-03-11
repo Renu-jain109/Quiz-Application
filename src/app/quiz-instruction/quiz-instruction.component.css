@@ -1,0 +1,9 @@
+.card{
+    width: auto;
+    max-width: 800px;
+    background-color: aliceblue;
+    padding: 30px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), 
+    -5px -5px 10px rgba(0, 0, 0, 0.1);
+
+}
