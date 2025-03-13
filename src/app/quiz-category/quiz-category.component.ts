@@ -11,4 +11,8 @@ import { CardModule } from 'primeng/card';
 })
 export class QuizCategoryComponent  {
 
+  goToTop (){
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
 }

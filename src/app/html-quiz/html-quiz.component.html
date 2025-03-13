@@ -1,24 +1,38 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <button type="button" class="btn btn-primary " routerLink="/quiz/category">Back</button>
+            <!-- Navigation button to go back to Quiz Categories -->
+            <button type="button" class="btn btn-secondary " routerLink="/quiz/category">Back</button>
 
+            <!-- Quiz Title -->
             <h1 class="text-center text-primary">HTML Quiz</h1>
 
+            <!-- Displaying User's Score and Remaining Time -->
             <div class="row d-flex flex-row justify-content-around fs-5 text-center">
+
+                <!-- Shows the number of correct answers out of total questions -->
                 <div class="col-sm-6 col-md-4 col-lg-2">Your Score: {{ countRightAnswers }} / {{ questionsList.length }}
                 </div>
-                <div class="col-sm-6 col-md-4 col-lg-2">Time Left: {{countdown}} sec</div>
+
+                <div class="col-sm-6 col-md-4 col-lg-2">
+                    <!-- Displays remaining time for the current question -->
+                    Time Left: {{countdown}} sec
+                </div>
             </div>
 
             <div class="row justify-content-center pt-5">
+
                 <div class="card" *ngIf="!isQuizCompleted">
-                    <div class="">
+                    <div>
+                        <!-- Displaying the current question number and question text -->
                         <h3>Q {{ currentQuestion + 1}} : {{ questionsList[currentQuestion].question }}</h3>
 
+                        <!-- Loop through the available options for the current question -->
                         <div class="" *ngFor="let option of questionsList[currentQuestion].options">
-                            <label [ngClass]="getAnswerClass(option)" class="option-label"> <input type="radio"
-                                    name="question{{currentQuestion}}" id="" [value]="option"
+                            <label [ngClass]="getAnswerClass(option)" class="option-label">
+
+                                <!-- Radio button to select an answer -->
+                                <input type="radio" name="question{{currentQuestion}}" id="" [value]="option"
                                     (change)="selectAnswer(option)" [checked]="selectedAnswer === option">
                                 {{option}}
                             </label>
@@ -27,37 +41,57 @@
                     </div>
 
                     <div class="text-center d-flex flex-column gap-2">
+
                         <div class="">
+                            <!-- Submit button (Visible only if the user hasn't submitted the answer yet) -->
                             <button type="button" class="btn btn-primary" *ngIf="!answered"
-                                (click)="submit()">Submit</button>
+                                (click)="checkAnswer()">Submit</button>
                         </div>
+
                         <div class="text-center">
+                            <!-- Next button (Visible only after the user has answered the question) -->
                             <button type="button" class="btn btn-primary " *ngIf="answered"
-                                (click)="nextQuestion()">Next</button>
+                                (click)="goToNextQuestion()">Next</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="col-12">
             <p-toast></p-toast>
 
-            <!-- Result Popup -->
+            <!-- Dialog Box appears when time is over and the question is not attempted -->
+            <p-dialog [(visible)]="showNextQuestion" header="Quiz Result" [modal]="true" (onHide)="continueQuiz()">
+                <p>"Time Over! You didn't attempt question."</p>
 
+                <!-- Button to go to the next question when time is up -->
+                <p-button *ngIf="!isPassed" label="Go To Next Question" severity="info" (click)="continueQuiz()" />
+
+            </p-dialog>
+        </div>
+
+        <div class="col-12">
+            <p-toast></p-toast>
+
+            <!-- Final Result Dialog (Shows score, pass/fail message, and retry options) -->
             <p-dialog [(visible)]="displayResult" header="Quiz Result" [modal]="true">
+
                 <p>Your Score: <strong>{{ countRightAnswers }} / {{ totalQuestions }}</strong></p>
                 <p><strong>{{ countWrongAnswers }}</strong> Wrong Answers</p>
-                <p *ngIf="doQuestion">"Time Over! You didn't attempt any question."</p>
+
+                <!-- Dynamic message based on pass/fail condition -->
                 <p [ngClass]="{'pass-text': isPassed, 'fail-text': !isPassed}">
                     {{ isPassed ? '🎉 Congratulations! You Passed! ' : '❌ You Failed!' }}
                 </p>
+
+                <!-- Buttons to either exit, retry, or go back to categories -->
                 <div class="text-center ps-4 d-flex flex-row gap-3">
                     <p-button *ngIf="isPassed" label="Ok" severity="info" (click)="closePopup()"
                         routerLink="/quiz/category" />
                     <p-button *ngIf="!isPassed" label="Ok" severity="info" (click)="closePopup()" />
                     <p-button *ngIf="!isPassed" label="Try Again" severity="info" (click)="restartQuiz()" />
                 </div>
-                <!-- <button (click)="closePopup()">OK</button> -->
             </p-dialog>
         </div>
     </div>

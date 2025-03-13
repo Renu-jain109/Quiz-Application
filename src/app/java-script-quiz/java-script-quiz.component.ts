@@ -13,28 +13,28 @@ import { RouterLink } from '@angular/router';
   styleUrl: './java-script-quiz.component.css'
 })
 export class JavaScriptQuizComponent implements OnInit {
-  selectedAnswer: string = "";
-  currentQuestion: number = 0;
-  isQuizCompleted: boolean = false;
-  isCorrectAnswer: boolean | null = null;
-  countdown: number = 3; //Timer ke liye variable
-  countdownInterval: any;
-  totalQuestions: number = 10;
-  countRightAnswers: number = 0;
-  countWrongAnswers: number = 0;
-  answered: boolean = false;
-  displayResult: boolean = false;
-  isPassed: boolean = false;
-  resultMessage : string ="";
-  doQuestion : boolean = false;
-
+  selectedAnswer: string = ""; // Stores the selected answer by the user
+  currentQuestion: number = 0; // Keeps track of the current question index
+  isQuizCompleted: boolean = false; // Indicates if the quiz is completed
+  isCorrectAnswer: boolean | null = null; // Stores whether the selected answer is correct or not
+  countdown: number = 30; // Timer for each question
+  countdownInterval: any; // Stores the interval reference for countdown
+  totalQuestions: number = 10; // Total number of questions in the quiz
+  countRightAnswers: number = 0; // Counts the number of correct answers
+  countWrongAnswers: number = 0; // Counts the number of incorrect answers
+  answered: boolean = false; // Checks if the current question has been answered
+  displayResult: boolean = false; // To show the result popup
+  isPassed: boolean = false; // To track pass/fail
+  resultMessage: string = ""; // Stores the result message
+  showNextQuestion: boolean = false; // Flag to show the next question
 
 
   ngOnInit(): void {
-    this.startCountdown();
+    this.startCountdown(); // Starts the countdown timer when the quiz start
 
   }
 
+  // questions list
   questionsList = [
     {
       question: 'Which of the following is used to declare a variable in JavaScript?',
@@ -129,111 +129,94 @@ export class JavaScriptQuizComponent implements OnInit {
     }
   ];
 
-  // Answer select karne ke liye function
+  //Function to select the answer
   selectAnswer(option: string) {
     if (!this.answered) {
-      this.selectedAnswer = option;
+      this.selectedAnswer = option; // Stores the selected answer only if the user hasn't answered yet
     }
   };
 
-  submit() {
-  //   if (this.countRightAnswers === 0 && this.countWrongAnswers === 0) {
-  //     // this.resultMessage = "Time Over! You didn't attempt any question.";
-  //     console.log('a=',this.countRightAnswers);
-  //     console.log('b=',this.countWrongAnswers);
-      
-  //     this.doQuestion = true;
-  // } 
 
+  checkAnswer() {
     if (this.selectedAnswer) {
+      //It check whether the answer is correct or not
       this.isCorrectAnswer = this.selectedAnswer === this.questionsList[this.currentQuestion].correctAnswer;
-      if(this.isCorrectAnswer){
-        this.countRightAnswers++; // Correct answer hone par count increase hoga
-
-      }else{
-        this.countWrongAnswers++; // Wrong answer hone par count decrease hoga
+      if (this.isCorrectAnswer) {
+        this.countRightAnswers++; // Increases correct answer count
+      } else {
+        this.countWrongAnswers++; // Increases wrong answer count
       }
-      this.answered = true;
+      this.answered = true; // Marks the question as answered
     }
   };
 
 
   // To go to the next question.
-  nextQuestion() {
+  goToNextQuestion() {
     if (this.currentQuestion < this.questionsList.length - 1) {
-      this.currentQuestion++;
-      this.selectedAnswer = "";
-      this.isCorrectAnswer = null;
-      this.answered = false // New question ke liye answer unlock
-      this.startCountdown(); // Restart countdown.
-
+      this.currentQuestion++; // Move to the next question
+      this.selectedAnswer = ""; // Reset selected answer
+      this.isCorrectAnswer = null; // Reset correctness status
+      this.answered = false; // Unlock the question for a new attempt
+      this.startCountdown(); // Restart countdown for the next question
     } else {
-      this.isQuizCompleted = true;
-      clearInterval(this.countdownInterval); // Stop timer when quiz ends
-      this.isPassed = this.countRightAnswers >= 7; // Pass if score is 7 or more
-
-    // else {
-    //     this.resultMessage = `Your Score: ${this.countRightAnswers}/${this.totalQuestions}`;
-    // }
-  
-      this.displayResult = true;// Show result popup
+      this.isQuizCompleted = true; // Marks quiz as completed
+      clearInterval(this.countdownInterval); // Stops the countdown timer
+      this.isPassed = this.countRightAnswers >= 7; // Checks if the user passed (minimum 7 correct answers)
+      this.displayResult = true; // Shows the result popup
     }
   };
 
 
-
   startCountdown() {
-    clearInterval(this.countdownInterval); // Pehle existing timer ko stop karo
-    this.countdown = 3; // Restart countdown from 30 seconds
+    clearInterval(this.countdownInterval); // Stops any existing countdown
+    this.countdown = 30; // Resets countdown to 30 seconds
     this.countdownInterval = setInterval(() => {
       if (this.countdown > 0) {
-        this.countdown--;
-  
+        this.countdown--; // Decrease timer every second
       } else {
-        clearInterval(this.countdownInterval);
+        clearInterval(this.countdownInterval); // Stop countdown 
         if (!this.answered)
-          this.countWrongAnswers++; // Agar user answer na de to wrong count kare
-          this.nextQuestion();  // Go to next question when timer ends
+          this.countWrongAnswers++; // Increase incorrect answer count if user did not answer
+        this.showNextQuestion = true; // Show "Next Question" button
       }
-    
-    }, 3000);
+    }, 1000);
   };
+
+  continueQuiz() {
+    this.goToNextQuestion(); // Move to the next question
+    this.showNextQuestion = false; // Hide the "Next Question" button
+  }
 
 
   getAnswerClass(option: string) {
     if (!this.answered) {
-      return '';
+      return ''; // No styling if the question is not answered yet
     }
     if (option === this.selectedAnswer && this.selectedAnswer === this.questionsList[this.currentQuestion].correctAnswer) {
       return 'correct-answer'; // Green color for correct answer
     } else if (option === this.selectedAnswer && this.selectedAnswer !== this.questionsList[this.currentQuestion].correctAnswer) {
       return 'wrong-answer '; // Red color for wrong answer
     }
-    
-
-    return '';
-    
+    return ''; // Default (no styling)
   };
+
 
   closePopup() {
     this.displayResult = false; // Close the result popup
   };
+
 
   restartQuiz() {
     this.selectedAnswer = "";
     this.currentQuestion = 0;
     this.isQuizCompleted = false;
     this.isCorrectAnswer = null;
-    this.countRightAnswers = 0; // Right answers ko reset karna
-    this.countWrongAnswers = 0;  // Wrong answers ko reset karna
+    this.countRightAnswers = 0; // Reset correct answers count
+    this.countWrongAnswers = 0; // Reset wrong answers count
     this.answered = false;
     this.displayResult = false;
     this.isPassed = false;
     this.startCountdown(); // Restart countdown
-
   };
-
 }
-
-
-

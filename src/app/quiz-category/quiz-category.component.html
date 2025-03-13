@@ -1,10 +1,15 @@
 <div class="container-fluid">
+    <!-- Full-width Bootstrap container -->
     <div class="row pb-5">
+
         <div class="col-12">
             <h1 class="text-primary text-center">Select a Category & Start Your Quiz!</h1>
+            <!-- Main heading for category selection -->
         </div>
+
         <!-- HTML Quiz Section -->
         <div class="row pt-5 d-flex flex-row align-items-center justify-content-center">
+
             <!-- Left Side: Image Card -->
             <div class="col-md-5 col-sm-12">
                 <div class="card shadow-lg rounded">
@@ -12,12 +17,15 @@
                 </div>
             </div>
 
-            <!-- Right Side: Text -->
+            <!-- Right Side: Quiz Description & Play Button -->
             <div class="col-md-5 col-sm-12 p-4 fs-3">
                 <div class="d-flex flex-column gap-3">
                     <div>
-                       <strong> HTML is the backbone of the web, giving structure and meaning to every page. </strong>Test your HTML knowledge with this quiz!                    </div>
+                        <strong> HTML is the backbone of the web, giving structure and meaning to every
+                            page.</strong>Test your HTML knowledge with this quiz!
+                    </div>
                     <div class="text-center">
+                        <!-- Navigates to HTML quiz questions -->
                         <button type="button" class="btn btn-primary" routerLink="/html/quiz/questions">Play</button>
                     </div>
                 </div>
@@ -26,13 +34,16 @@
 
         <!-- CSS Quiz Section -->
         <div class="row pt-5 d-flex flex-row align-items-center justify-content-center">
-            <!-- Left Side: Text -->
+
+            <!-- Left Side: Quiz Description & Play Button -->
             <div class="col-md-5 col-sm-12 p-5 fs-3">
                 <div class="d-flex flex-column gap-3">
                     <div>
-                        <strong> Think of CSS as the style expert of a website— </strong>beautiful, responsive, and elegant. Take the quiz and see how well you know the basics of CSS!"
+                        <strong> Think of CSS as the style expert of a website— </strong>beautiful, responsive, and
+                        elegant. Take the quiz and see how well you know the basics of CSS!"
                     </div>
                     <div class="text-center">
+                        <!-- Navigates to CSS quiz questions -->
                         <button type="button" class="btn btn-primary" routerLink="/css/quiz/questions">Play</button>
                     </div>
                 </div>
@@ -47,31 +58,44 @@
         </div>
 
 
-        <!-- Java Script Quiz Section -->
+        <!-- JavaScript Quiz Section -->
         <div class="row pt-5 d-flex flex-row align-items-center justify-content-center">
 
-            <!-- Right Side: Image Card -->
+            <!-- Left Side: Image Card -->
             <div class="col-md-5 col-sm-12">
                 <div class="card shadow-lg rounded">
                     <img src="/assets/java-script-image.jpg" class="img-fluid rounded">
                 </div>
             </div>
-            <!-- Left Side: Text -->
+
+            <!-- Right Side: Quiz Description & Play Button -->
             <div class="col-md-5 col-sm-12 p-5 fs-3">
                 <div class="d-flex flex-column gap-3">
                     <div>
-                       <strong> Think of JavaScript as the brain of a website— </strong>dynamic, interactive, and powerful. Take the quiz and see how well you know the basics of JavaScript. </div>
+                        <strong> Think of JavaScript as the brain of a website— </strong>dynamic, interactive, and
+                        powerful. Take the quiz and see how well you know the basics of JavaScript.
+                    </div>
                     <div class="text-center">
-                        <button type="button" class="btn btn-primary" routerLink="/java-script/quiz/questions">Play</button>
+                        <!-- Navigates to JavaScript quiz questions -->
+                        <button type="button" class="btn btn-primary"
+                            routerLink="/java-script/quiz/questions">Play</button>
                     </div>
                 </div>
             </div>
-
         </div>
-        <div class="row pt-5 text-center">
-            <div class="c0l-12">
-                <button type="button" class="btn btn-primary" routerLink="/home">Go To Home</button>
 
+        <!-- Navigation Buttons -->
+        <div class="row pt-5">
+            <div class="col-12">
+                <div class=" wrapper d-flex justify-content-between align-items-center">
+                    <!-- Left Side: Back Button -->
+                    <button type="button" class="btn btn-secondary" routerLink="/quiz/instructions">Back</button>
+                    <!-- Navigates back to quiz instructions page -->
+
+                    <!-- Center: Go To Top Button -->
+                    <button type="button" class="btn btn-primary mx-auto" (click)="goToTop()">Go To Top</button>
+                    <!-- Scrolls the page to the top using Angular function-->
+                </div>
             </div>
         </div>
     </div>
