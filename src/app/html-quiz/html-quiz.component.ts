@@ -190,6 +190,7 @@ export class HtmlQuizComponent implements OnInit {
   }
 
 
+
   getAnswerClass(option: string) {
     if (!this.answered) {
       return ''; // No styling if the question is not answered yet

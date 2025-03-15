@@ -107,7 +107,7 @@ export class JavaScriptQuizComponent implements OnInit {
         'const myFunc = function => {};',
         'const myFunc = () => { return 5; }'
       ],
-      correctAnswer: 'const myFunc = function => {};'
+      correctAnswer: 'const myFunc = () => {};'
     }, {
       question: 'Which function is used to execute a function after a specified time in JavaScript?',
       options: [

@@ -62,11 +62,11 @@
             <p-toast></p-toast>
 
             <!-- Dialog Box appears when time is over and the question is not attempted -->
-            <p-dialog [(visible)]="showNextQuestion" header="Quiz Result" [modal]="true" (onHide)="continueQuiz()">
+            <p-dialog [(visible)]="showNextQuestion" header="Quiz Result" [modal]="true" [closable]="false" >
                 <p>"Time Over! You didn't attempt question."</p>
 
                 <!-- Button to go to the next question when time is up -->
-                <p-button *ngIf="!isPassed" label="Go To Next Question" severity="info" (click)="continueQuiz()" />
+                <p-button label="Go To Next Question" severity="info" (click)="continueQuiz()" />
 
             </p-dialog>
         </div>
@@ -89,7 +89,6 @@
                 <div class="text-center ps-4 d-flex flex-row gap-3">
                     <p-button *ngIf="isPassed" label="Ok" severity="info" (click)="closePopup()"
                         routerLink="/quiz/category" />
-                    <p-button *ngIf="!isPassed" label="Ok" severity="info" (click)="closePopup()" />
                     <p-button *ngIf="!isPassed" label="Try Again" severity="info" (click)="restartQuiz()" />
                 </div>
             </p-dialog>
