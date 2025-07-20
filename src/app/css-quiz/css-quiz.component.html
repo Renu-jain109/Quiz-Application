@@ -75,7 +75,7 @@
             <p-toast></p-toast>
 
             <!-- Final Result Dialog (Shows score, pass/fail message, and retry options) -->
-            <p-dialog [(visible)]="displayResult" header="Quiz Result" [modal]="true">
+            <p-dialog [(visible)]="displayResult" header="Quiz Result" [modal]="true" [style]="{ width: '18rem' }">
 
                 <p>Your Score: <strong>{{ countRightAnswers }} / {{ totalQuestions }}</strong></p>
                 <p><strong>{{ countWrongAnswers }}</strong> Wrong Answers</p>
