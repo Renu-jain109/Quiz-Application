@@ -84,19 +84,27 @@
             </div>
         </div>
 
+
         <!-- Navigation Buttons -->
         <div class="row pt-5">
             <div class="col-12">
-                <div class=" wrapper d-flex justify-content-between align-items-center">
-                    <!-- Left Side: Back Button -->
-                    <button type="button" class="btn btn-secondary" routerLink="/quiz/instructions">Back</button>
-                    <!-- Navigates back to quiz instructions page -->
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 text-center">
 
-                    <!-- Center: Go To Top Button -->
-                    <button type="button" class="btn btn-primary mx-auto" (click)="goToTop()">Go To Top</button>
-                    <!-- Scrolls the page to the top using Angular function-->
+                    <!-- Back Button -->
+                    <button type="button" class="btn btn-secondary px-4" routerLink="/quiz/instructions">
+                        ← Back
+                    </button>
+
+                    <!-- Go To Top Button -->
+                    <button type="button" class="btn btn-primary px-4" (click)="goToTop()">
+                        ↑ Go To Top
+                    </button>
+
                 </div>
             </div>
         </div>
+
+
     </div>
 </div>
