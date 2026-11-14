@@ -1,0 +1,303 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated learner or engineer profile storing role preference, email, personal details, and bookmarked question IDs.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "fullName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "roleId": {
+          "type": "string",
+          "enum": ["all", "student", "frontend", "fullstack", "senior"]
+        },
+        "organization": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "experienceLevel": {
+          "type": "string",
+          "enum": ["Student / Fresher", "Junior (1-2 yrs)", "Mid-Level (3-5 yrs)", "Senior / Lead (5+ yrs)"]
+        },
+        "bio": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "bookmarkedIds": {
+          "type": "array"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "fullName",
+        "roleId",
+        "organization",
+        "experienceLevel",
+        "bio",
+        "bookmarkedIds",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "QuizAttempt": {
+      "title": "QuizAttempt",
+      "description": "Completed quiz assessment record owned by an individual user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "trackId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "trackTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "roleId": {
+          "type": "string",
+          "enum": ["all", "student", "frontend", "fullstack", "senior"]
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["timed", "practice"]
+        },
+        "difficultyFilter": {
+          "type": "string",
+          "enum": ["All", "Low", "Medium", "High", "Fundamentals", "Intermediate", "Senior"]
+        },
+        "totalQuestions": {
+          "type": "number"
+        },
+        "correctCount": {
+          "type": "number"
+        },
+        "wrongCount": {
+          "type": "number"
+        },
+        "skippedCount": {
+          "type": "number"
+        },
+        "accuracy": {
+          "type": "number"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "durationSeconds": {
+          "type": "number"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "trackId",
+        "trackTitle",
+        "roleId",
+        "mode",
+        "difficultyFilter",
+        "totalQuestions",
+        "correctCount",
+        "wrongCount",
+        "skippedCount",
+        "accuracy",
+        "passed",
+        "durationSeconds",
+        "completedAt"
+      ]
+    },
+    "Certificate": {
+      "title": "Certificate",
+      "description": "Verified assessment completion certificate issued when accuracy meets or exceeds 70%.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "recipientName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "recipientEmail": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "organization": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "roleId": {
+          "type": "string",
+          "enum": ["all", "student", "frontend", "fullstack", "senior"]
+        },
+        "trackId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "trackTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Frontend & UI",
+            "Frameworks & A11y",
+            "Backend & APIs",
+            "Databases & Cache",
+            "Cloud & DevOps",
+            "CS, Security & AI"
+          ]
+        },
+        "difficultyFilter": {
+          "type": "string",
+          "enum": ["All", "Low", "Medium", "High", "Fundamentals", "Intermediate", "Senior"]
+        },
+        "correctCount": {
+          "type": "number"
+        },
+        "totalQuestions": {
+          "type": "number"
+        },
+        "accuracy": {
+          "type": "number"
+        },
+        "verificationCode": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 40
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "recipientName",
+        "recipientEmail",
+        "organization",
+        "roleId",
+        "trackId",
+        "trackTitle",
+        "category",
+        "difficultyFilter",
+        "correctCount",
+        "totalQuestions",
+        "accuracy",
+        "verificationCode",
+        "issuedAt"
+      ]
+    },
+    "TopicStat": {
+      "title": "TopicStat",
+      "description": "Cumulative per-topic accuracy counters used for 6-discipline skill analytics and weak-topic drills.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "trackId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Frontend & UI",
+            "Frameworks & A11y",
+            "Backend & APIs",
+            "Databases & Cache",
+            "Cloud & DevOps",
+            "CS, Security & AI"
+          ]
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "correct": {
+          "type": "number"
+        },
+        "total": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "trackId",
+        "category",
+        "topic",
+        "correct",
+        "total",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private user profile containing role, email, personal details, and bookmarked question IDs."
+    },
+    "/users/{userId}/attempts/{attemptId}": {
+      "schema": { "$ref": "#/entities/QuizAttempt" },
+      "description": "Private quiz attempt history subcollection owned by the authenticated user."
+    },
+    "/users/{userId}/certificates/{certificateId}": {
+      "schema": { "$ref": "#/entities/Certificate" },
+      "description": "Private earned completion certificates subcollection owned by the authenticated user."
+    },
+    "/users/{userId}/topicStats/{statId}": {
+      "schema": { "$ref": "#/entities/TopicStat" },
+      "description": "Private per-topic accuracy counters owned by the authenticated user."
+    }
+  }
+}

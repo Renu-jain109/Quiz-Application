@@ -1,0 +1,112 @@
+<div
+  class="cert-backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="certificate-modal-title"
+  (click)="close()"
+>
+  <div class="cert-modal-shell" (click)="$event.stopPropagation()">
+    <!-- Screen-only Controls -->
+    <div class="cert-toolbar no-print">
+      <div class="cert-toolbar-meta">
+        <span class="cert-toolbar-kicker">Completion Certificate</span>
+        <span class="cert-toolbar-id font-mono-tabular">{{ certificate().verificationCode }}</span>
+      </div>
+      <div class="cert-toolbar-actions">
+        <button type="button" class="sb-btn sb-btn-secondary" (click)="copyVerificationCode()">
+          <i class="pi" [class.pi-check]="copied()" [class.pi-copy]="!copied()"></i>
+          <span>{{ copied() ? 'ID Copied' : 'Copy ID' }}</span>
+        </button>
+        <button type="button" class="sb-btn sb-btn-primary" (click)="printPdf()">
+          <i class="pi pi-print"></i>
+          <span>Print / Save PDF</span>
+        </button>
+        <button
+          type="button"
+          class="sb-btn sb-btn-ghost"
+          aria-label="Close certificate preview"
+          (click)="close()"
+        >
+          <i class="pi pi-times"></i>
+          <span>Close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Printable Archival Credential Sheet -->
+    <article class="certificate-sheet">
+      <div class="cert-inner-frame">
+        <header class="cert-sheet-header">
+          <div class="cert-brand-block">
+            <span class="cert-brand-mark">SyntaxBench</span>
+            <span class="cert-brand-sub">Engineering Skill Verification Platform</span>
+          </div>
+
+          <div class="cert-seal" aria-hidden="true">
+            <svg viewBox="0 0 64 64" width="58" height="58" fill="none">
+              <circle cx="32" cy="32" r="28" stroke="#1d4ed8" stroke-width="2" />
+              <circle cx="32" cy="32" r="22" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3 3" />
+              <path
+                d="M22 32.5L28.5 39L42 25.5"
+                stroke="#059669"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+        </header>
+
+        <div class="cert-body">
+          <p id="certificate-modal-title" class="cert-eyebrow">
+            Certificate of Technical Proficiency
+          </p>
+          <p class="cert-lead">This credential certifies that</p>
+          <h2 class="cert-recipient">{{ certificate().recipientName }}</h2>
+          <p class="cert-recipient-meta">{{ recipientMetaLine() }}</p>
+
+          <p class="cert-statement">
+            has successfully completed and passed the technical assessment for
+          </p>
+          <h3 class="cert-track-title">{{ certificate().trackTitle }}</h3>
+          <p class="cert-track-scope">
+            {{ certificate().category }} · {{ levelLabel() }} · Benchmark ≥ 70%
+          </p>
+        </div>
+
+        <div class="cert-metrics-grid">
+          <div class="cert-metric-cell">
+            <span class="cert-metric-label">Verified Score</span>
+            <span class="cert-metric-value font-mono-tabular">
+              {{ certificate().correctCount }} / {{ certificate().totalQuestions }}
+            </span>
+          </div>
+          <div class="cert-metric-cell">
+            <span class="cert-metric-label">Accuracy</span>
+            <span class="cert-metric-value font-mono-tabular">{{ certificate().accuracy }}%</span>
+          </div>
+          <div class="cert-metric-cell">
+            <span class="cert-metric-label">Date Issued</span>
+            <span class="cert-metric-value">{{ formattedDate() }}</span>
+          </div>
+          <div class="cert-metric-cell">
+            <span class="cert-metric-label">Verification ID</span>
+            <span class="cert-metric-value font-mono-tabular">{{ certificate().verificationCode }}</span>
+          </div>
+        </div>
+
+        <footer class="cert-sheet-footer">
+          <div class="cert-sign-block">
+            <span class="cert-sign-line">SyntaxBench Assessment Board</span>
+            <span class="cert-sign-caption">Automated Verification · 31-Track Standard</span>
+          </div>
+          <div class="cert-verify-note">
+            <span>Status: Passed</span>
+            <span aria-hidden="true">·</span>
+            <span>Archival Credential</span>
+          </div>
+        </footer>
+      </div>
+    </article>
+  </div>
+</div>

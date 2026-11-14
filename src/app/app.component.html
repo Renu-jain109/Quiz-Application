@@ -1,3 +1,112 @@
+<div class="app-shell">
+  <header class="site-header">
+    <div class="sb-container header-inner">
+      <!-- Zone 1: Single text element wordmark -->
+      <a class="brand-wordmark" routerLink="/home" (click)="closeMobileMenu()">
+        SyntaxBench
+      </a>
 
-<!-- Main content of the website -->
-<router-outlet></router-outlet>
+      <!-- Zone 2: Clean single-line navigation links -->
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a
+          class="nav-link-item"
+          routerLink="/home"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          Overview
+        </a>
+        <a
+          class="nav-link-item"
+          routerLink="/quiz/category"
+          routerLinkActive="is-active"
+        >
+          Tracks
+        </a>
+        <a
+          class="nav-link-item"
+          routerLink="/quiz/instructions"
+          routerLinkActive="is-active"
+        >
+          Guidelines
+        </a>
+        <a
+          class="nav-link-item"
+          routerLink="/history"
+          routerLinkActive="is-active"
+        >
+          History
+        </a>
+      </nav>
+
+      <!-- Zone 3: Account link + Single primary CTA + mobile drawer button -->
+      <div class="header-cta-zone">
+        <a
+          class="header-account-link"
+          routerLink="/login"
+          routerLinkActive="is-active"
+        >
+          <i class="pi pi-user" aria-hidden="true"></i>
+          <span>{{ authService.isSignedIn() ? authService.displayName() : 'Sign In' }}</span>
+        </a>
+        <a class="sb-btn sb-btn-primary header-cta-btn" routerLink="/quiz/category">
+          Start Assessment
+        </a>
+        <button
+          type="button"
+          class="mobile-menu-toggle"
+          [attr.aria-expanded]="mobileMenuOpen()"
+          aria-label="Toggle navigation menu"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="pi" [class.pi-bars]="!mobileMenuOpen()" [class.pi-times]="mobileMenuOpen()"></i>
+        </button>
+      </div>
+    </div>
+
+    @if (mobileMenuOpen()) {
+      <nav class="mobile-nav-drawer" aria-label="Mobile navigation">
+        <div class="sb-container mobile-nav-list">
+          <a class="mobile-nav-link" routerLink="/home" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Overview</a>
+          <a class="mobile-nav-link" routerLink="/quiz/category" routerLinkActive="is-active" (click)="closeMobileMenu()">Tracks (31)</a>
+          <a class="mobile-nav-link" routerLink="/quiz/instructions" routerLinkActive="is-active" (click)="closeMobileMenu()">Guidelines</a>
+          <a class="mobile-nav-link" routerLink="/history" routerLinkActive="is-active" (click)="closeMobileMenu()">History</a>
+          <a class="mobile-nav-link" routerLink="/login" routerLinkActive="is-active" (click)="closeMobileMenu()">
+            {{ authService.isSignedIn() ? 'Profile · ' + authService.displayName() : 'Sign In & Role Setup' }}
+          </a>
+          <a class="sb-btn sb-btn-primary mt-2" routerLink="/quiz/category" (click)="closeMobileMenu()">Start Assessment</a>
+        </div>
+      </nav>
+    }
+  </header>
+
+  <main class="app-main">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="site-footer">
+    <div class="sb-container footer-inner">
+      <div class="footer-brand-copy">
+        <span class="footer-brand">SyntaxBench</span>
+        <span class="footer-sep" aria-hidden="true">·</span>
+        <span>Full-Stack Engineering Skill Assessments · 31 Tracks</span>
+      </div>
+
+      <div class="footer-actions">
+        <a class="footer-link" routerLink="/login">{{ authService.isSignedIn() ? 'Profile' : 'Sign In' }}</a>
+        <a class="footer-link" routerLink="/quiz/category">Tracks</a>
+        <a class="footer-link" routerLink="/quiz/instructions">Guidelines</a>
+        <a class="footer-link" routerLink="/history">History</a>
+        <button
+          type="button"
+          class="theme-toggle-btn"
+          (click)="toggleTheme()"
+          [attr.aria-label]="quizService.theme() === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
+        >
+          <i class="pi" [class.pi-moon]="quizService.theme() === 'light'" [class.pi-sun]="quizService.theme() === 'dark'"></i>
+          <span>{{ quizService.theme() === 'light' ? 'Dark mode' : 'Light mode' }}</span>
+        </button>
+      </div>
+    </div>
+  </footer>
+</div>

@@ -1,13 +1,252 @@
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <section class="hero">
-                <div class="overlay"></div> <!-- Added Overlay -->
-                <div class="hero-text">
-                    <h1>Challenge Your Mind, Test Your Knowledge! Are You Ready for the Ultimate Quiz?</h1>
-                    <button type="button" class="btn btn-primary mt-5 fs-3" routerLink="/quiz/instructions">Play Quiz</button>
-                </div>
-            </section>
+<section class="hero-section">
+  <div class="sb-container">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        @if (authService.isSignedIn()) {
+          <p class="sb-kicker mb-2">
+            Welcome back, {{ authService.displayName() }} · {{ quizService.activeRoleProfile().label }}
+          </p>
+        } @else {
+          <p class="sb-kicker mb-2">31 Engineering Tracks · Progressive Skill Benchmarks</p>
+        }
+        <h1 class="hero-headline">
+          Verify your engineering craft with role-tailored technical quizzes.
+        </h1>
+        <p class="hero-lead">
+          Sign in with your role and personal profile, progress from <strong>Low (5 Qs)</strong> to
+          <strong>Medium (8 Qs)</strong> and <strong>High (12 Qs)</strong>, and master 31 tracks across
+          Frontend, React/Next.js/Vue, Node.js, PostgreSQL, Docker, Kubernetes, System Design, Security, and AI.
+        </p>
+
+        <div class="hero-actions">
+          <a class="sb-btn sb-btn-primary" routerLink="/quiz/category">
+            Explore All {{ quizService.tracks.length }} Tracks
+            <i class="pi pi-arrow-right"></i>
+          </a>
+          @if (!authService.isSignedIn()) {
+            <a class="sb-btn sb-btn-secondary" routerLink="/login">
+              <i class="pi pi-user"></i>
+              Sign In &amp; Pick Role
+            </a>
+          } @else {
+            <a class="sb-btn sb-btn-secondary" routerLink="/quiz/instructions">
+              Configure Session
+            </a>
+          }
         </div>
+      </div>
+
+      <div class="hero-media-frame sb-card">
+        @if (!heroImageFailed()) {
+          <img
+            [src]="quizService.heroImage"
+            alt="Minimalist software engineering workspace displaying structured code diagnostics and performance charts"
+            class="hero-media-img"
+            referrerpolicy="no-referrer"
+            (error)="onHeroImageError()"
+          />
+        } @else {
+          <div class="media-fallback hero-fallback">
+            <i class="pi pi-desktop fallback-icon"></i>
+            <span class="fallback-label">SyntaxBench Assessment Studio</span>
+          </div>
+        }
+      </div>
     </div>
-</div>
+
+    <!-- Full-width 4-column quantitative KPI strip -->
+    <div class="kpi-strip sb-card">
+      <div class="kpi-cell">
+        <span class="kpi-value font-mono-tabular">{{ quizService.tracks.length }}</span>
+        <span class="kpi-label">Engineering Tracks</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="kpi-value font-mono-tabular">{{ quizService.totalQuestionsCount() }}</span>
+        <span class="kpi-label">Curated Questions</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="kpi-value font-mono-tabular">5 → 16</span>
+        <span class="kpi-label">Questions Scale With Level</span>
+      </div>
+      <div class="kpi-cell">
+        @if (quizService.overallStats().totalAttempts > 0) {
+          <span class="kpi-value font-mono-tabular">{{ quizService.overallStats().avgAccuracy }}%</span>
+          <span class="kpi-label">Your Average Accuracy</span>
+        } @else {
+          <span class="kpi-value font-mono-tabular">70%</span>
+          <span class="kpi-label">Passing Benchmark</span>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tracks-preview-section">
+  <div class="sb-container">
+    <!-- Progressive Difficulty Scaling Strip -->
+    <div class="progression-strip sb-card">
+      <div class="progression-head">
+        <div>
+          <p class="sb-kicker mb-1">Adaptive Question Depth</p>
+          <h2 class="progression-title">Questions scale up step-by-step as level rises</h2>
+        </div>
+        <a class="sb-btn sb-btn-ghost" routerLink="/quiz/instructions">
+          View Guidelines
+          <i class="pi pi-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="progression-grid">
+        @for (tier of progressionTiers; track tier.level) {
+          <div class="progression-cell">
+            <div class="progression-cell-top">
+              <strong>{{ tier.level === 'All' ? 'Progressive Full' : tier.level + ' Level' }}</strong>
+              <span class="font-mono-tabular tier-q-count">{{ tier.questions }} Qs</span>
+            </div>
+            <p>{{ tier.summary }}</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Role Selector Bar -->
+    <div class="role-selector-panel sb-card">
+      <div class="role-panel-header">
+        <div>
+          <p class="sb-kicker mb-1">Role-Based Curriculum</p>
+          <h2 class="section-title">Select how you want to play</h2>
+        </div>
+
+        <div class="sb-segmented role-segmented" role="group" aria-label="Select learner or engineering role">
+          @for (role of quizService.roles; track role.id) {
+            <button
+              type="button"
+              class="sb-segmented-btn"
+              [class.is-active]="quizService.selectedRole() === role.id"
+              (click)="selectRole(role.id)"
+            >
+              {{ role.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="role-summary-row">
+        <div class="role-summary-copy">
+          <strong>{{ quizService.activeRoleProfile().label }} — {{ quizService.activeRoleProfile().tagline }}</strong>
+          <span class="role-desc-sep" aria-hidden="true">·</span>
+          <span>{{ quizService.activeRoleProfile().description }}</span>
+        </div>
+        <div class="sb-meta-line">
+          <span>{{ quizService.getLevelShortLabel(quizService.activeRoleProfile().defaultDifficulty) }}</span>
+          <span aria-hidden="true">·</span>
+          <span>{{ quizService.activeRoleProfile().defaultMode === 'practice' ? 'Guided Practice' : 'Timed (30s)' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header-row mt-4">
+      <div>
+        <h3 class="tracks-subheading">
+          {{ quizService.selectedRole() === 'all' ? 'Featured Tracks' : 'Top Picks for ' + quizService.activeRoleProfile().label }}
+          <span class="tracks-count font-mono-tabular">
+            (Showing {{ displayedTracks().length }} of {{ matchingTrackCount() }})
+          </span>
+        </h3>
+      </div>
+      <a class="sb-btn sb-btn-secondary" routerLink="/quiz/category">
+        Browse All {{ quizService.tracks.length }} Tracks
+      </a>
+    </div>
+
+    <div class="tracks-grid">
+      @for (track of displayedTracks(); track track.id) {
+        <article class="track-card sb-card">
+          <div class="track-thumb-wrap">
+            @if (!failedTrackImages()[track.id]) {
+              <img
+                [src]="track.image"
+                [alt]="track.title + ' visual cover'"
+                class="track-thumb"
+                referrerpolicy="no-referrer"
+                (error)="onTrackImageError(track.id)"
+              />
+            } @else {
+              <div class="media-fallback" [style.background]="track.fallbackGradient">
+                <span class="fallback-label">{{ track.shortTitle }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="track-card-body">
+            <div class="sb-meta-line mb-2">
+              <span>{{ track.category }}</span>
+              <span aria-hidden="true">·</span>
+              <span class="tabular-nums">
+                {{ quizService.getLevelShortLabel(quizService.activeRoleProfile().defaultDifficulty) }}
+              </span>
+            </div>
+
+            <h3 class="track-title">{{ track.title }}</h3>
+            <p class="track-summary">{{ track.summary }}</p>
+
+            <div class="track-footer">
+              @if (quizService.getTrackBestAccuracy(track.id); as best) {
+                <span class="best-score-text tabular-nums">Best: {{ best }}%</span>
+              } @else {
+                <span class="best-score-text">Not attempted</span>
+              }
+
+              <a
+                class="track-launch-link"
+                [routerLink]="track.routePath"
+                [queryParams]="{
+                  mode: quizService.activeRoleProfile().defaultMode,
+                  difficulty: quizService.activeRoleProfile().defaultDifficulty,
+                  role: quizService.selectedRole()
+                }"
+              >
+                Start Track
+                <i class="pi pi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="modes-section">
+  <div class="sb-container">
+    <div class="modes-grid">
+      <div class="mode-card sb-card">
+        <h3 class="mode-heading">01. Timed Assessment Mode</h3>
+        <p class="mode-copy">
+          Simulates technical screening pressure with a 30-second countdown per question, keyboard-driven option selection, and an overall accuracy report saved to your account history.
+        </p>
+        <div class="sb-meta-line mt-auto pt-3">
+          <span>30s per question</span>
+          <span aria-hidden="true">·</span>
+          <span>70% passing threshold</span>
+          <span aria-hidden="true">·</span>
+          <span>Synced History</span>
+        </div>
+      </div>
+
+      <div class="mode-card sb-card">
+        <h3 class="mode-heading">02. Guided Practice &amp; Review</h3>
+        <p class="mode-copy">
+          Ideal for students and deep study: remove the countdown clock to inspect code snippets carefully, read instant engineering explanations, bookmark tricky items, and retry missed questions.
+        </p>
+        <div class="sb-meta-line mt-auto pt-3">
+          <span>Untimed pace</span>
+          <span aria-hidden="true">·</span>
+          <span>Instant explanations</span>
+          <span aria-hidden="true">·</span>
+          <span>Bookmark &amp; Retry</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

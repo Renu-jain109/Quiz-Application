@@ -1,0 +1,302 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isValidRole(role) {
+      return role is string && role in ['all', 'student', 'frontend', 'fullstack', 'senior'];
+    }
+
+    function isValidExperience(exp) {
+      return exp is string && exp in [
+        'Student / Fresher',
+        'Junior (1-2 yrs)',
+        'Mid-Level (3-5 yrs)',
+        'Senior / Lead (5+ yrs)'
+      ];
+    }
+
+    function isValidBookmarks(list) {
+      return list is list &&
+        list.size() <= 150 &&
+        (list.size() == 0 || (list[0] is string && list[0].size() >= 1 && list[0].size() <= 64));
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll([
+          'uid',
+          'email',
+          'fullName',
+          'roleId',
+          'organization',
+          'experienceLevel',
+          'bio',
+          'bookmarkedIds',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'uid',
+          'email',
+          'fullName',
+          'roleId',
+          'organization',
+          'experienceLevel',
+          'bio',
+          'bookmarkedIds',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.uid is string && data.uid == userId && data.uid.size() >= 1 && data.uid.size() <= 128 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 120 &&
+        data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 80 &&
+        isValidRole(data.roleId) &&
+        data.organization is string && data.organization.size() <= 100 &&
+        isValidExperience(data.experienceLevel) &&
+        data.bio is string && data.bio.size() <= 240 &&
+        isValidBookmarks(data.bookmarkedIds) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidCategory(cat) {
+      return cat is string && cat in [
+        'Frontend & UI',
+        'Frameworks & A11y',
+        'Backend & APIs',
+        'Databases & Cache',
+        'Cloud & DevOps',
+        'CS, Security & AI'
+      ];
+    }
+
+    function isValidDifficulty(diff) {
+      return diff is string && diff in [
+        'All', 'Low', 'Medium', 'High', 'Fundamentals', 'Intermediate', 'Senior'
+      ];
+    }
+
+    function isValidAttempt(data, userId) {
+      return data.keys().hasAll([
+          'userId',
+          'trackId',
+          'trackTitle',
+          'roleId',
+          'mode',
+          'difficultyFilter',
+          'totalQuestions',
+          'correctCount',
+          'wrongCount',
+          'skippedCount',
+          'accuracy',
+          'passed',
+          'durationSeconds',
+          'completedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'userId',
+          'trackId',
+          'trackTitle',
+          'roleId',
+          'mode',
+          'difficultyFilter',
+          'totalQuestions',
+          'correctCount',
+          'wrongCount',
+          'skippedCount',
+          'accuracy',
+          'passed',
+          'durationSeconds',
+          'completedAt'
+        ]) &&
+        data.userId is string && data.userId == userId && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+        data.trackId is string && data.trackId.size() >= 1 && data.trackId.size() <= 64 &&
+        data.trackTitle is string && data.trackTitle.size() >= 1 && data.trackTitle.size() <= 120 &&
+        isValidRole(data.roleId) &&
+        data.mode is string && data.mode in ['timed', 'practice'] &&
+        isValidDifficulty(data.difficultyFilter) &&
+        data.totalQuestions is int && data.totalQuestions >= 1 && data.totalQuestions <= 50 &&
+        data.correctCount is int && data.correctCount >= 0 && data.correctCount <= data.totalQuestions &&
+        data.wrongCount is int && data.wrongCount >= 0 && data.wrongCount <= data.totalQuestions &&
+        data.skippedCount is int && data.skippedCount >= 0 && data.skippedCount <= data.totalQuestions &&
+        data.accuracy is int && data.accuracy >= 0 && data.accuracy <= 100 &&
+        data.passed is bool &&
+        data.durationSeconds is int && data.durationSeconds >= 0 && data.durationSeconds <= 86400 &&
+        data.completedAt is timestamp;
+    }
+
+    function isValidCertificate(data, userId) {
+      return data.keys().hasAll([
+          'userId',
+          'recipientName',
+          'recipientEmail',
+          'organization',
+          'roleId',
+          'trackId',
+          'trackTitle',
+          'category',
+          'difficultyFilter',
+          'correctCount',
+          'totalQuestions',
+          'accuracy',
+          'verificationCode',
+          'issuedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'userId',
+          'recipientName',
+          'recipientEmail',
+          'organization',
+          'roleId',
+          'trackId',
+          'trackTitle',
+          'category',
+          'difficultyFilter',
+          'correctCount',
+          'totalQuestions',
+          'accuracy',
+          'verificationCode',
+          'issuedAt'
+        ]) &&
+        data.userId is string && data.userId == userId && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+        data.recipientName is string && data.recipientName.size() >= 1 && data.recipientName.size() <= 80 &&
+        data.recipientEmail is string && data.recipientEmail.size() <= 120 &&
+        data.organization is string && data.organization.size() <= 100 &&
+        isValidRole(data.roleId) &&
+        data.trackId is string && data.trackId.size() >= 1 && data.trackId.size() <= 64 &&
+        data.trackTitle is string && data.trackTitle.size() >= 1 && data.trackTitle.size() <= 120 &&
+        isValidCategory(data.category) &&
+        isValidDifficulty(data.difficultyFilter) &&
+        data.totalQuestions is int && data.totalQuestions >= 1 && data.totalQuestions <= 50 &&
+        data.correctCount is int && data.correctCount >= 0 && data.correctCount <= data.totalQuestions &&
+        data.accuracy is int && data.accuracy >= 70 && data.accuracy <= 100 &&
+        data.verificationCode is string && data.verificationCode.size() >= 6 && data.verificationCode.size() <= 40 &&
+        data.issuedAt is timestamp;
+    }
+
+    function isValidTopicStat(data, userId) {
+      return data.keys().hasAll([
+          'userId',
+          'trackId',
+          'category',
+          'topic',
+          'correct',
+          'total',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'userId',
+          'trackId',
+          'category',
+          'topic',
+          'correct',
+          'total',
+          'updatedAt'
+        ]) &&
+        data.userId is string && data.userId == userId && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+        data.trackId is string && data.trackId.size() >= 1 && data.trackId.size() <= 64 &&
+        isValidCategory(data.category) &&
+        data.topic is string && data.topic.size() >= 1 && data.topic.size() <= 80 &&
+        data.total is int && data.total >= 1 && data.total <= 5000 &&
+        data.correct is int && data.correct >= 0 && data.correct <= data.total &&
+        data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isVerifiedOwner(userId);
+      allow create: if isValidId(userId) &&
+        isVerifiedOwner(userId) &&
+        isValidUserProfile(incoming(), userId) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isValidId(userId) &&
+        isVerifiedOwner(userId) &&
+        isValidUserProfile(incoming(), userId) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'email',
+          'fullName',
+          'roleId',
+          'organization',
+          'experienceLevel',
+          'bio',
+          'bookmarkedIds',
+          'updatedAt'
+        ]);
+      allow delete: if false;
+
+      match /attempts/{attemptId} {
+        allow get: if isValidId(userId) && isValidId(attemptId) && isVerifiedOwner(userId);
+        allow list: if isValidId(userId) && isVerifiedOwner(userId);
+        allow create: if isValidId(userId) &&
+          isValidId(attemptId) &&
+          isVerifiedOwner(userId) &&
+          isValidAttempt(incoming(), userId) &&
+          incoming().completedAt == request.time;
+        allow update: if false;
+        allow delete: if isValidId(userId) && isValidId(attemptId) && isVerifiedOwner(userId);
+      }
+
+      match /certificates/{certificateId} {
+        allow get: if isValidId(userId) && isValidId(certificateId) && isVerifiedOwner(userId);
+        allow list: if isValidId(userId) && isVerifiedOwner(userId);
+        allow create: if isValidId(userId) &&
+          isValidId(certificateId) &&
+          isVerifiedOwner(userId) &&
+          isValidCertificate(incoming(), userId) &&
+          incoming().issuedAt == request.time;
+        allow update: if false;
+        allow delete: if isValidId(userId) && isValidId(certificateId) && isVerifiedOwner(userId);
+      }
+
+      match /topicStats/{statId} {
+        allow get: if isValidId(userId) && isValidId(statId) && isVerifiedOwner(userId);
+        allow list: if isValidId(userId) && isVerifiedOwner(userId);
+        allow create: if isValidId(userId) &&
+          isValidId(statId) &&
+          isVerifiedOwner(userId) &&
+          isValidTopicStat(incoming(), userId) &&
+          incoming().updatedAt == request.time;
+        allow update: if isValidId(userId) &&
+          isValidId(statId) &&
+          isVerifiedOwner(userId) &&
+          isValidTopicStat(incoming(), userId) &&
+          incoming().userId == existing().userId &&
+          incoming().trackId == existing().trackId &&
+          incoming().topic == existing().topic &&
+          incoming().updatedAt == request.time;
+        allow delete: if isValidId(userId) && isValidId(statId) && isVerifiedOwner(userId);
+      }
+    }
+  }
+}

@@ -1,42 +1,74 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { QuizCategoryComponent } from './quiz-category/quiz-category.component';
-import { HtmlQuizComponent } from './html-quiz/html-quiz.component';
-import { QuizInstructionComponent } from './quiz-instruction/quiz-instruction.component';
-import { CssQuizComponent } from './css-quiz/css-quiz.component';
-import { JavaScriptQuizComponent } from './java-script-quiz/java-script-quiz.component';
 
 export const routes: Routes = [
-    {
-        path:'',
-        component:HomeComponent
-    },
-    {
-        path:'home',
-        component:HomeComponent
-    },
-    {
-        path:'quiz/category',
-        component:QuizCategoryComponent
-    },
-    {
-        path:'quiz/instructions',
-        component:QuizInstructionComponent
-    },
-    {
-        path:'html/quiz/questions',
-        component:HtmlQuizComponent
-    },
-    {
-        path:'css/quiz/questions',
-        component:CssQuizComponent
-    },
-    {
-        path:'java-script/quiz/questions',
-        component:JavaScriptQuizComponent
-    },
-    {
-        path:'**',
-        redirectTo:'HomeComponent'
-    }
+  {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full',
+  },
+  {
+    path: 'home',
+    loadComponent: () =>
+      import('./home/home.component').then((m) => m.HomeComponent),
+  },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'quiz/category',
+    loadComponent: () =>
+      import('./quiz-category/quiz-category.component').then(
+        (m) => m.QuizCategoryComponent
+      ),
+  },
+  {
+    path: 'quiz/instructions',
+    loadComponent: () =>
+      import('./quiz-instruction/quiz-instruction.component').then(
+        (m) => m.QuizInstructionComponent
+      ),
+  },
+  {
+    path: 'quiz/drill',
+    loadComponent: () =>
+      import('./quiz-runner/quiz-runner.component').then(
+        (m) => m.QuizRunnerComponent
+      ),
+    data: { drillMode: true },
+  },
+  {
+    path: 'quiz/run/:trackId',
+    loadComponent: () =>
+      import('./quiz-runner/quiz-runner.component').then(
+        (m) => m.QuizRunnerComponent
+      ),
+  },
+  {
+    path: 'history',
+    loadComponent: () =>
+      import('./history/history.component').then((m) => m.HistoryComponent),
+  },
+  {
+    path: 'html/quiz/questions',
+    loadComponent: () =>
+      import('./html-quiz/html-quiz.component').then((m) => m.HtmlQuizComponent),
+  },
+  {
+    path: 'css/quiz/questions',
+    loadComponent: () =>
+      import('./css-quiz/css-quiz.component').then((m) => m.CssQuizComponent),
+  },
+  {
+    path: 'java-script/quiz/questions',
+    loadComponent: () =>
+      import('./java-script-quiz/java-script-quiz.component').then(
+        (m) => m.JavaScriptQuizComponent
+      ),
+  },
+  {
+    path: '**',
+    redirectTo: 'home',
+  },
 ];
