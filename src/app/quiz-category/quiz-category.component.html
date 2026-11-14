@@ -1,0 +1,242 @@
+<section class="directory-page">
+  <div class="sb-container">
+    <div class="directory-header">
+      <div>
+        <p class="sb-kicker mb-1">
+          Assessment Catalog · {{ quizService.tracks.length }} Engineering Tracks
+        </p>
+        <h1 class="directory-title">Choose your role, discipline &amp; progressive level</h1>
+        <p class="directory-subtitle">
+          Select your role and target difficulty. Question volume scales automatically as you step up
+          from Low (5 Qs) to Medium (8 Qs), High (12 Qs), and Progressive Full (16 Qs).
+        </p>
+      </div>
+      <div class="directory-header-actions">
+        @if (!authService.isSignedIn()) {
+          <a class="sb-btn sb-btn-secondary" routerLink="/login">
+            <i class="pi pi-user"></i>
+            Sign In &amp; Save Progress
+          </a>
+        }
+        <a class="sb-btn sb-btn-secondary" routerLink="/history">
+          <i class="pi pi-chart-bar"></i>
+          View History
+        </a>
+      </div>
+    </div>
+
+    <!-- Interactive Role, Filter & Session Config Toolbar -->
+    <div class="toolbar-panel sb-card">
+      <div class="toolbar-row">
+        <div class="filter-group">
+          <span class="filter-label">Play As Role</span>
+          <div class="sb-segmented flex-wrap" role="group" aria-label="Select learner or engineering role">
+            @for (role of quizService.roles; track role.id) {
+              <button
+                type="button"
+                class="sb-segmented-btn"
+                [class.is-active]="quizService.selectedRole() === role.id"
+                (click)="selectRole(role.id)"
+              >
+                {{ role.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (quizService.selectedRole() !== 'all') {
+          <div class="filter-group">
+            <span class="filter-label">Catalog Scope</span>
+            <div class="sb-segmented" role="group" aria-label="Toggle recommended vs all tracks">
+              <button
+                type="button"
+                class="sb-segmented-btn"
+                [class.is-active]="onlyRoleRecommended()"
+                (click)="toggleRoleRecommended(true)"
+              >
+                For {{ quizService.activeRoleProfile().label }}
+              </button>
+              <button
+                type="button"
+                class="sb-segmented-btn"
+                [class.is-active]="!onlyRoleRecommended()"
+                (click)="toggleRoleRecommended(false)"
+              >
+                All {{ quizService.tracks.length }} Tracks
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="toolbar-row toolbar-row-secondary">
+        <div class="filter-group">
+          <span class="filter-label">Discipline</span>
+          <div class="sb-segmented flex-wrap" role="group" aria-label="Filter by discipline">
+            @for (cat of categories; track cat) {
+              <button
+                type="button"
+                class="sb-segmented-btn"
+                [class.is-active]="categoryFilter() === cat"
+                (click)="setCategory(cat)"
+              >
+                {{ cat === 'All' ? 'All Disciplines' : cat }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Session Mode</span>
+          <div class="sb-segmented" role="group" aria-label="Select session mode">
+            <button
+              type="button"
+              class="sb-segmented-btn"
+              [class.is-active]="selectedMode() === 'timed'"
+              (click)="setMode('timed')"
+            >
+              <i class="pi pi-clock"></i>
+              Timed (30s)
+            </button>
+            <button
+              type="button"
+              class="sb-segmented-btn"
+              [class.is-active]="selectedMode() === 'practice'"
+              (click)="setMode('practice')"
+            >
+              <i class="pi pi-book"></i>
+              Practice (Untimed)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar-row toolbar-row-secondary">
+        <div class="filter-group">
+          <span class="filter-label">Level &amp; Questions</span>
+          <div class="sb-segmented flex-wrap" role="group" aria-label="Filter by progressive difficulty level">
+            @for (diff of difficulties; track diff) {
+              <button
+                type="button"
+                class="sb-segmented-btn"
+                [class.is-active]="difficultyFilter() === diff"
+                (click)="setDifficulty(diff)"
+              >
+                {{ quizService.getLevelShortLabel(diff) }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="search-wrap">
+          <label for="track-search" class="visually-hidden">Search tracks or topics</label>
+          <i class="pi pi-search search-icon" aria-hidden="true"></i>
+          <input
+            id="track-search"
+            type="search"
+            class="search-input"
+            [formControl]="searchControl"
+            placeholder="Filter 31 tracks (e.g., React, PostgreSQL, Docker, RAG, JWT)..."
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="catalog-results-meta">
+      <span class="font-mono-tabular">
+        Showing {{ filteredTracks().length }} of {{ quizService.tracks.length }} tracks
+      </span>
+      <span aria-hidden="true">·</span>
+      <span>Active tier: {{ quizService.getLevelShortLabel(difficultyFilter()) }}</span>
+      @if (authService.isSignedIn()) {
+        <span aria-hidden="true">·</span>
+        <span>Signed in as {{ authService.displayName() }}</span>
+      }
+    </div>
+
+    <!-- Track Grid -->
+    @if (filteredTracks().length > 0) {
+      <div class="catalog-grid">
+        @for (track of filteredTracks(); track track.id) {
+          <article class="catalog-card sb-card">
+            <div class="catalog-media">
+              @if (!failedImages()[track.id]) {
+                <img
+                  [src]="track.image"
+                  [alt]="track.title + ' illustration'"
+                  class="catalog-img"
+                  referrerpolicy="no-referrer"
+                  (error)="onImageError(track.id)"
+                />
+              } @else {
+                <div class="catalog-fallback" [style.background]="track.fallbackGradient">
+                  <span>{{ track.shortTitle }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="catalog-content">
+              <div class="sb-meta-line mb-2">
+                <span>{{ track.category }}</span>
+                <span aria-hidden="true">·</span>
+                <span class="tabular-nums">{{ getQuestionCountForTrack(track) }} Questions</span>
+                @if (quizService.getHighestMasteredLevel(track.id); as mastered) {
+                  <span aria-hidden="true">·</span>
+                  <span class="role-match-text">Mastered: {{ mastered === 'All' ? 'Full' : mastered }}</span>
+                } @else if (quizService.selectedRole() !== 'all' && quizService.isTrackRecommendedForRole(track.id)) {
+                  <span aria-hidden="true">·</span>
+                  <span class="role-match-text">Recommended for {{ quizService.activeRoleProfile().label }}</span>
+                }
+              </div>
+
+              <h2 class="catalog-card-title">{{ track.title }}</h2>
+              <p class="catalog-card-desc">{{ track.summary }}</p>
+
+              <p class="catalog-topics">
+                Pool: {{ quizService.getDifficultyCount(track.id, 'Low') }} Low ·
+                {{ quizService.getDifficultyCount(track.id, 'Medium') }} Medium ·
+                {{ quizService.getDifficultyCount(track.id, 'High') }} High
+              </p>
+
+              <div class="catalog-card-footer">
+                <div class="catalog-stats">
+                  @if (quizService.getTrackBestAccuracy(track.id); as best) {
+                    <span class="stat-strong tabular-nums">Best: {{ best }}%</span>
+                  } @else {
+                    <span class="stat-muted">No attempts yet</span>
+                  }
+                  <span class="stat-sep" aria-hidden="true">·</span>
+                  <span class="stat-muted tabular-nums">
+                    {{ quizService.getTrackAttemptCount(track.id) }} runs
+                  </span>
+                </div>
+
+                <a
+                  class="sb-btn sb-btn-primary"
+                  [routerLink]="track.routePath"
+                  [queryParams]="{
+                    mode: selectedMode(),
+                    difficulty: difficultyFilter(),
+                    role: quizService.selectedRole()
+                  }"
+                >
+                  Start Track
+                  <i class="pi pi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="empty-state sb-card">
+        <i class="pi pi-filter-slash empty-icon"></i>
+        <h2 class="empty-title">No tracks match your filter</h2>
+        <p class="empty-copy">Try clearing your search keyword or switching to All {{ quizService.tracks.length }} Tracks &amp; All Roles.</p>
+        <button type="button" class="sb-btn sb-btn-secondary" (click)="resetFilters()">
+          Reset Filters
+        </button>
+      </div>
+    }
+  </div>
+</section>

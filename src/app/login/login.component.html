@@ -1,0 +1,253 @@
+<div class="sb-container login-page">
+  <header class="login-header">
+    <span class="sb-kicker">Candidate &amp; Learner Account</span>
+    <h1>
+      @if (authService.isSignedIn()) {
+        Manage your engineering profile
+      } @else {
+        Sign in to personalize your benchmark
+      }
+    </h1>
+    <p>
+      Select your target role, verify your email, and set your personal details to unlock tailored
+      track recommendations across 31 engineering disciplines and progressive Low-to-High rounds.
+    </p>
+  </header>
+
+  @if (authService.isSignedIn()) {
+    <section class="sb-card active-session-banner" aria-label="Active signed-in profile">
+      <div class="session-identity">
+        <div class="session-avatar" aria-hidden="true">
+          {{ authService.displayName().slice(0, 1).toUpperCase() }}
+        </div>
+        <div>
+          <div class="session-name-row">
+            <strong>{{ authService.profile()?.fullName }}</strong>
+            <span class="sb-meta-line">
+              <span>{{ authService.profile()?.email }}</span>
+              <span aria-hidden="true">·</span>
+              <span>{{ authService.isCloudSynced() ? 'Cloud Synced (Firestore)' : 'Local Profile Session' }}</span>
+            </span>
+          </div>
+          <p class="session-submeta">
+            Role: {{ quizService.getRoleProfile(authService.profile()!.roleId).label }}
+            · {{ authService.profile()?.experienceLevel }}
+            @if (authService.profile()?.organization) {
+              · {{ authService.profile()?.organization }}
+            }
+          </p>
+        </div>
+      </div>
+      <div class="session-actions">
+        <a class="sb-btn sb-btn-primary" routerLink="/quiz/category">
+          Explore {{ quizService.getRoleProfile(authService.profile()!.roleId).label }} Tracks
+        </a>
+        <button
+          type="button"
+          class="sb-btn sb-btn-secondary"
+          [disabled]="authService.isBusy()"
+          (click)="signOut()"
+        >
+          Sign Out
+        </button>
+      </div>
+    </section>
+  }
+
+  @if (statusMessage()) {
+    <div class="sb-alert sb-alert-success" role="status">
+      <i class="pi pi-check-circle" aria-hidden="true"></i>
+      <span>{{ statusMessage() }}</span>
+    </div>
+  }
+
+  @if (authService.authError()) {
+    <div class="sb-alert sb-alert-danger" role="alert">
+      <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      <span>{{ authService.authError() }}</span>
+    </div>
+  }
+
+  <div class="login-grid">
+    <!-- Column 1: Role Selection & Progressive Preview -->
+    <section class="sb-card role-panel" aria-labelledby="role-step-heading">
+      <div class="panel-step-head">
+        <span class="step-index font-mono-tabular">01</span>
+        <div>
+          <h2 id="role-step-heading">Choose your assessment role</h2>
+          <p>Your role tunes default difficulty, assessment pacing, and track ordering.</p>
+        </div>
+      </div>
+
+      <div class="role-options-list" role="radiogroup" aria-label="Engineering role profile">
+        @for (role of quizService.roles; track role.id) {
+          <button
+            type="button"
+            class="role-option-card"
+            [class.is-selected]="selectedRoleId() === role.id"
+            [attr.aria-checked]="selectedRoleId() === role.id"
+            role="radio"
+            (click)="selectRole(role.id)"
+          >
+            <div class="role-card-top">
+              <strong>{{ role.label }}</strong>
+              <span class="role-meta-inline font-mono-tabular">
+                {{ quizService.getLevelShortLabel(role.defaultDifficulty) }}
+              </span>
+            </div>
+            <span class="role-card-tagline">{{ role.tagline }}</span>
+            <p class="role-card-desc">{{ role.description }}</p>
+          </button>
+        }
+      </div>
+
+      <div class="role-preview-box">
+        <div class="preview-box-title">
+          <strong>{{ activeRoleProfile().label }} Curated Focus</strong>
+          <span class="font-mono-tabular">
+            {{ activeRoleProfile().recommendedTracks.length }} priority tracks
+          </span>
+        </div>
+        <p class="preview-tracks-line">
+          {{ recommendedTrackTitles().join(' · ') }}
+        </p>
+        <div class="ladder-mini-bar">
+          <span>Low: 5 Qs</span>
+          <span aria-hidden="true">→</span>
+          <span>Medium: 8 Qs</span>
+          <span aria-hidden="true">→</span>
+          <span>High: 12 Qs</span>
+          <span aria-hidden="true">→</span>
+          <span>Progressive: 16 Qs</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Column 2: Email & Personal Details Form -->
+    <section class="sb-card details-panel" aria-labelledby="details-step-heading">
+      <div class="panel-step-head">
+        <span class="step-index font-mono-tabular">02</span>
+        <div>
+          <h2 id="details-step-heading">Email &amp; personal details</h2>
+          <p>Sign in with Google for Cloud Firestore sync, or continue with a local session profile.</p>
+        </div>
+      </div>
+
+      <div class="oauth-box">
+        <button
+          type="button"
+          class="sb-btn sb-btn-secondary google-signin-btn"
+          [disabled]="authService.isBusy()"
+          (click)="continueWithGoogle()"
+        >
+          <i class="pi pi-google" aria-hidden="true"></i>
+          <span>
+            @if (authService.isBusy()) {
+              Connecting account...
+            } @else if (authService.isCloudSynced()) {
+              Re-sync Google Cloud Account
+            } @else {
+              Continue with Google (Cloud Sync)
+            }
+          </span>
+        </button>
+        <span class="oauth-caption">
+          Verifies email via Google Auth and persists profile, bookmarks, and attempt history in Firestore.
+        </span>
+      </div>
+
+      <div class="form-divider" role="separator">
+        <span>Or complete personal details directly</span>
+      </div>
+
+      <form [formGroup]="profileForm" (ngSubmit)="submitLocalProfile()" class="details-form" novalidate>
+        <div class="form-row-two">
+          <div class="field-group">
+            <label for="login-fullName">Full Name <span class="req-mark">*</span></label>
+            <input
+              id="login-fullName"
+              type="text"
+              formControlName="fullName"
+              placeholder="e.g., Renu Jain"
+              autocomplete="name"
+              [class.is-invalid]="hasError('fullName')"
+            />
+            @if (hasError('fullName')) {
+              <span class="field-error">Enter your full name (2–80 characters).</span>
+            }
+          </div>
+
+          <div class="field-group">
+            <label for="login-email">Email Address <span class="req-mark">*</span></label>
+            <input
+              id="login-email"
+              type="email"
+              formControlName="email"
+              placeholder="you@company.com"
+              autocomplete="email"
+              [class.is-invalid]="hasError('email')"
+            />
+            @if (hasError('email')) {
+              <span class="field-error">Enter a valid email address.</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row-two">
+          <div class="field-group">
+            <label for="login-org">Company / University</label>
+            <input
+              id="login-org"
+              type="text"
+              formControlName="organization"
+              placeholder="e.g., Acme Systems or IIT Delhi"
+              autocomplete="organization"
+            />
+          </div>
+
+          <div class="field-group">
+            <label for="login-exp">Experience Level <span class="req-mark">*</span></label>
+            <select id="login-exp" formControlName="experienceLevel">
+              @for (level of experienceLevels; track level) {
+                <option [value]="level">{{ level }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="login-bio">Target Stack or Assessment Goal</label>
+          <textarea
+            id="login-bio"
+            rows="3"
+            formControlName="bio"
+            placeholder="e.g., Preparing for senior full-stack TypeScript & Kubernetes interviews."
+          ></textarea>
+          <span class="field-hint">
+            {{ profileForm.controls.bio.value.length }} / 240 characters
+          </span>
+        </div>
+
+        <div class="form-submit-row">
+          <button
+            type="submit"
+            class="sb-btn sb-btn-primary submit-profile-btn"
+            [disabled]="authService.isBusy()"
+          >
+            <i class="pi pi-user-plus" aria-hidden="true"></i>
+            <span>
+              @if (authService.isSignedIn()) {
+                Update Profile &amp; Preferences
+              } @else {
+                Sign In with Profile Details
+              }
+            </span>
+          </button>
+          <a class="sb-btn sb-btn-ghost" routerLink="/quiz/category">
+            Skip &amp; Browse All 31 Tracks
+          </a>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>

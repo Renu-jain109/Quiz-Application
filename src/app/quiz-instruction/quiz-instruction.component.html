@@ -1,0 +1,173 @@
+<section class="guidelines-page">
+  <div class="sb-container">
+    <div class="guidelines-header">
+      <a class="back-link" routerLink="/home">
+        <i class="pi pi-arrow-left"></i>
+        Back to Overview
+      </a>
+      <p class="sb-kicker mt-3 mb-1">Assessment Protocol</p>
+      <h1 class="guidelines-title">Assessment Guidelines &amp; Role Setup</h1>
+      <p class="guidelines-subtitle">
+        Review progressive Low-to-High question scaling, timing modes, and keyboard shortcuts before starting.
+      </p>
+    </div>
+
+    <div class="guidelines-grid">
+      <!-- Left: Structured Guidelines -->
+      <div class="rules-column">
+        <article class="rule-card sb-card">
+          <h2 class="rule-heading">01. Progressive Levels &amp; Step-by-Step Question Depth</h2>
+          <ul class="rule-list">
+            <li>Choose a role (<strong>Student</strong>, <strong>Frontend Dev</strong>, <strong>Full-Stack Dev</strong>, or <strong>Senior / Lead</strong>) to align tracks and default pacing.</li>
+            <li>Every one of the <strong>{{ quizService.tracks.length }} tracks</strong> includes 16 curated questions and scales volume as difficulty increases:</li>
+            <li><strong>Low (5 Qs)</strong> covers fundamentals · <strong>Medium (8 Qs)</strong> blends 3 Low + 5 Medium · <strong>High (12 Qs)</strong> mixes 2 Low + 4 Medium + 6 High · <strong>Progressive Full (16 Qs)</strong> tests the full ladder.</li>
+          </ul>
+        </article>
+
+        <article class="rule-card sb-card">
+          <h2 class="rule-heading">02. Timing, Scoring &amp; Cloud Sync</h2>
+          <ul class="rule-list">
+            <li>In <strong>Timed Assessment</strong> mode, you have <strong>30 seconds per question</strong>. Unanswered items when the clock expires are marked incorrect.</li>
+            <li>In <strong>Guided Practice</strong> mode (ideal for Students), the timer pauses so you can inspect code snippets and explanations carefully.</li>
+            <li>Achieve <strong>70% accuracy or higher</strong> to pass. Signed-in accounts sync attempt history and bookmarked questions to Cloud Firestore automatically.</li>
+          </ul>
+        </article>
+
+        <article class="rule-card sb-card">
+          <h2 class="rule-heading">03. Keyboard Shortcuts</h2>
+          <div class="shortcut-table">
+            <div class="shortcut-row">
+              <span class="shortcut-keys"><kbd>1</kbd> – <kbd>4</kbd></span>
+              <span class="shortcut-desc">Select option A, B, C, or D</span>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-keys"><kbd>Enter</kbd></span>
+              <span class="shortcut-desc">Submit selected answer or advance to next question</span>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-keys"><kbd>B</kbd></span>
+              <span class="shortcut-desc">Bookmark or unbookmark the current question for later review</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Right: Quick Launcher -->
+      <aside class="launcher-column">
+        <div class="launcher-card sb-card">
+          <h2 class="launcher-title">Configure &amp; Launch</h2>
+          <p class="launcher-copy">
+            Pick your role, discipline, track, pacing mode, and progressive level tier.
+          </p>
+
+          <div class="launcher-field">
+            <span class="launcher-label">1. Play As Role</span>
+            <div class="track-picker-list">
+              @for (role of quizService.roles; track role.id) {
+                <button
+                  type="button"
+                  class="track-picker-btn"
+                  [class.is-selected]="selectedRoleId() === role.id"
+                  (click)="selectRole(role.id)"
+                >
+                  <span class="picker-title">{{ role.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="launcher-field">
+            <span class="launcher-label">2. Filter Discipline</span>
+            <div class="track-picker-list">
+              <button
+                type="button"
+                class="track-picker-btn"
+                [class.is-selected]="selectedCategory() === 'All'"
+                (click)="selectCategory('All')"
+              >
+                <span class="picker-title">All ({{ quizService.tracks.length }})</span>
+              </button>
+              @for (cat of quizService.trackCategories; track cat) {
+                <button
+                  type="button"
+                  class="track-picker-btn"
+                  [class.is-selected]="selectedCategory() === cat"
+                  (click)="selectCategory(cat)"
+                >
+                  <span class="picker-title">{{ cat }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="launcher-field">
+            <span class="launcher-label">3. Track ({{ visibleTracks().length }} matching)</span>
+            <div class="track-picker-list launcher-tracks-scroll">
+              @for (track of visibleTracks(); track track.id) {
+                <button
+                  type="button"
+                  class="track-picker-btn"
+                  [class.is-selected]="selectedTrackId() === track.id"
+                  (click)="selectTrack(track.id)"
+                >
+                  <span class="picker-title">{{ track.shortTitle }}</span>
+                  <span class="picker-meta tabular-nums">
+                    {{ quizService.getQuestionsForTrack(track.id, selectedDifficulty()).length }}
+                  </span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="launcher-field">
+            <span class="launcher-label">4. Assessment Mode</span>
+            <div class="sb-segmented w-100">
+              <button
+                type="button"
+                class="sb-segmented-btn flex-fill"
+                [class.is-active]="selectedMode() === 'timed'"
+                (click)="selectMode('timed')"
+              >
+                Timed (30s)
+              </button>
+              <button
+                type="button"
+                class="sb-segmented-btn flex-fill"
+                [class.is-active]="selectedMode() === 'practice'"
+                (click)="selectMode('practice')"
+              >
+                Practice (Untimed)
+              </button>
+            </div>
+          </div>
+
+          <div class="launcher-field">
+            <span class="launcher-label">5. Progressive Level &amp; Question Count</span>
+            <div class="difficulty-grid">
+              @for (diff of difficulties; track diff) {
+                <button
+                  type="button"
+                  class="diff-btn"
+                  [class.is-selected]="selectedDifficulty() === diff"
+                  (click)="selectDifficulty(diff)"
+                >
+                  {{ quizService.getLevelShortLabel(diff) }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="launcher-actions">
+            <button type="button" class="sb-btn sb-btn-primary w-100" (click)="launchSelected()">
+              Begin {{ quizService.getTrack(selectedTrackId()).shortTitle }} ({{ quizService.getLevelQuestionCount(selectedDifficulty()) }} Qs)
+              <i class="pi pi-arrow-right"></i>
+            </button>
+            <a class="sb-btn sb-btn-secondary w-100" routerLink="/quiz/category">
+              Browse Full Catalog
+            </a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

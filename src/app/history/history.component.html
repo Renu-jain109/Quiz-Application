@@ -1,0 +1,389 @@
+<section class="history-page">
+  <div class="sb-container">
+    <div class="history-header">
+      <div>
+        <p class="sb-kicker mb-1">
+          @if (authService.isSignedIn()) {
+            Performance Log · {{ authService.displayName() }} ({{ authService.isCloudSynced() ? 'Cloud Firestore Synced' : 'Local Profile' }})
+          } @else {
+            Performance Log · Local Browser Storage
+          }
+        </p>
+        <h1 class="history-title">Skill Analytics, Certificates &amp; Review</h1>
+        <p class="history-subtitle">
+          Track accuracy across all 6 engineering disciplines, export verified PDF completion certificates, and drill your weakest topics.
+        </p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        @if (!authService.isSignedIn()) {
+          <a class="sb-btn sb-btn-secondary" routerLink="/login">
+            <i class="pi pi-user"></i>
+            Sign In to Cloud Sync
+          </a>
+        }
+        <a class="sb-btn sb-btn-primary" routerLink="/quiz/category">
+          New Assessment
+          <i class="pi pi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Overall Stats Strip -->
+    <div class="history-kpis sb-card">
+      <div class="kpi-cell">
+        <span class="kpi-val font-mono-tabular">{{ quizService.overallStats().totalAttempts }}</span>
+        <span class="kpi-lbl">Completed Runs</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="kpi-val font-mono-tabular">{{ quizService.overallStats().avgAccuracy }}%</span>
+        <span class="kpi-lbl">Average Accuracy</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="kpi-val font-mono-tabular">{{ quizService.overallStats().uniqueTracksPassed }} / {{ quizService.tracks.length }}</span>
+        <span class="kpi-lbl">Tracks Passed</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="kpi-val font-mono-tabular">{{ quizService.overallStats().certificateCount }}</span>
+        <span class="kpi-lbl">Certificates Earned</span>
+      </div>
+    </div>
+
+    <!-- 6-Discipline Skill Matrix & Weak-Topic Drill -->
+    <section class="analytics-section" aria-label="6-Discipline Skill Analytics">
+      <div class="analytics-header">
+        <div>
+          <h2 class="analytics-title">6-Discipline Skill Mastery</h2>
+          <p class="analytics-subtitle">
+            Cumulative accuracy across Frontend, Frameworks, Backend, Databases, Cloud/DevOps, and CS/Security/AI.
+          </p>
+        </div>
+
+        @if (quizService.weakTopics().length > 0) {
+          <a class="sb-btn sb-btn-primary" routerLink="/quiz/drill">
+            <i class="pi pi-bolt"></i>
+            Drill Weakest Topics
+          </a>
+        } @else if (quizService.overallStats().totalAttempts > 0) {
+          <a class="sb-btn sb-btn-secondary" routerLink="/quiz/drill">
+            <i class="pi pi-refresh"></i>
+            Targeted Practice Drill
+          </a>
+        }
+      </div>
+
+      <div class="discipline-grid">
+        @for (item of quizService.disciplineMastery(); track item.category) {
+          <article class="discipline-card sb-card">
+            <div class="discipline-top">
+              <h3 class="discipline-name">{{ item.category }}</h3>
+              <span
+                class="discipline-score font-mono-tabular"
+                [class.is-strong]="item.avgAccuracy !== null && item.avgAccuracy >= 70"
+                [class.is-weak]="item.avgAccuracy !== null && item.avgAccuracy < 70"
+              >
+                {{ item.avgAccuracy !== null ? item.avgAccuracy + '%' : '—' }}
+              </span>
+            </div>
+
+            <div class="discipline-bar-track" role="progressbar" [attr.aria-valuenow]="item.avgAccuracy ?? 0" aria-valuemin="0" aria-valuemax="100">
+              <div
+                class="discipline-bar-fill"
+                [class.is-strong]="item.avgAccuracy !== null && item.avgAccuracy >= 70"
+                [class.is-weak]="item.avgAccuracy !== null && item.avgAccuracy < 70"
+                [style.width.%]="item.avgAccuracy ?? 0"
+              ></div>
+            </div>
+
+            <div class="sb-meta-line">
+              <span class="tabular-nums">{{ item.tracksPassed }}/{{ item.totalTracks }} passed</span>
+              <span aria-hidden="true">·</span>
+              <span class="tabular-nums">{{ item.totalRuns }} runs</span>
+              @if (item.weakestTopic) {
+                <span aria-hidden="true">·</span>
+                <span class="focus-text">Focus: {{ item.weakestTopic }}</span>
+              } @else if (item.strongestTrack) {
+                <span aria-hidden="true">·</span>
+                <span>Top: {{ item.strongestTrack }}</span>
+              }
+            </div>
+          </article>
+        }
+      </div>
+
+      @if (quizService.weakTopics().length > 0) {
+        <div class="weak-topics-panel sb-card">
+          <div class="weak-topics-head">
+            <div>
+              <h3 class="weak-topics-title">
+                <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+                Focus Topics Below 75% Accuracy
+              </h3>
+              <p class="weak-topics-copy">
+                Launch an untimed 10-question practice drill targeting your lowest-scoring engineering topics.
+              </p>
+            </div>
+            <a class="sb-btn sb-btn-primary" routerLink="/quiz/drill">
+              Start 10-Question Drill
+              <i class="pi pi-arrow-right"></i>
+            </a>
+          </div>
+
+          <div class="weak-topics-list">
+            @for (wt of quizService.weakTopics().slice(0, 6); track wt.id) {
+              <div class="weak-topic-row">
+                <div class="weak-topic-info">
+                  <span class="weak-topic-name">{{ wt.topic }}</span>
+                  <span class="sb-meta-line">
+                    <span>{{ wt.trackShortTitle }}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ wt.category }}</span>
+                  </span>
+                </div>
+                <div class="weak-topic-metrics font-mono-tabular">
+                  <span class="weak-ratio">{{ wt.correct }}/{{ wt.total }}</span>
+                  <span class="weak-acc">{{ wt.accuracy }}%</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Segmented Switcher -->
+    <div class="tab-toolbar">
+      <div class="sb-segmented flex-wrap" role="tablist" aria-label="History view switcher">
+        <button
+          type="button"
+          role="tab"
+          class="sb-segmented-btn"
+          [class.is-active]="activeTab() === 'attempts'"
+          [attr.aria-selected]="activeTab() === 'attempts'"
+          (click)="setTab('attempts')"
+        >
+          Attempt History ({{ quizService.attempts().length }})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="sb-segmented-btn"
+          [class.is-active]="activeTab() === 'certificates'"
+          [attr.aria-selected]="activeTab() === 'certificates'"
+          (click)="setTab('certificates')"
+        >
+          Certificates ({{ quizService.certificates().length }})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="sb-segmented-btn"
+          [class.is-active]="activeTab() === 'bookmarks'"
+          [attr.aria-selected]="activeTab() === 'bookmarks'"
+          (click)="setTab('bookmarks')"
+        >
+          Saved Questions ({{ quizService.bookmarkedQuestions().length }})
+        </button>
+      </div>
+
+      @if (activeTab() === 'attempts' && quizService.attempts().length > 0) {
+        <div class="clear-controls">
+          @if (!confirmClear()) {
+            <button type="button" class="sb-btn sb-btn-secondary" (click)="requestClear()">
+              Clear History
+            </button>
+          } @else {
+            <span class="confirm-prompt">Remove all saved attempts &amp; topic stats?</span>
+            <button type="button" class="sb-btn sb-btn-secondary" (click)="cancelClear()">Cancel</button>
+            <button type="button" class="sb-btn sb-btn-danger" (click)="confirmClearHistory()">Confirm Clear</button>
+          }
+        </div>
+      }
+    </div>
+
+    @if (activeTab() === 'attempts') {
+      @if (quizService.attempts().length > 0) {
+        <div class="table-card sb-card">
+          <div class="table-responsive">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Track</th>
+                  <th>Role</th>
+                  <th>Mode</th>
+                  <th>Scope</th>
+                  <th class="text-end">Score</th>
+                  <th class="text-end">Accuracy</th>
+                  <th class="text-end">Duration</th>
+                  <th>Result</th>
+                  <th class="text-end">Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of quizService.attempts(); track row.id) {
+                  <tr>
+                    <td class="cell-track">
+                      <a class="table-track-link" [routerLink]="quizService.getTrack(row.trackId).routePath">
+                        {{ row.trackTitle }}
+                      </a>
+                    </td>
+                    <td>{{ quizService.getRoleProfile(row.roleId || 'all').label }}</td>
+                    <td>{{ row.mode === 'timed' ? 'Timed (30s)' : 'Practice' }}</td>
+                    <td>{{ quizService.getLevelShortLabel(row.difficultyFilter) }}</td>
+                    <td class="text-end font-mono-tabular">{{ row.correctCount }} / {{ row.totalQuestions }}</td>
+                    <td class="text-end font-mono-tabular">{{ row.accuracy }}%</td>
+                    <td class="text-end font-mono-tabular">{{ formatDuration(row.durationSeconds) }}</td>
+                    <td>
+                      @if (row.passed) {
+                        <span class="status-label status-pass">
+                          <i class="pi pi-check-circle"></i> Passed
+                        </span>
+                      } @else {
+                        <span class="status-label status-fail">
+                          <i class="pi pi-times-circle"></i> Below Benchmark
+                        </span>
+                      }
+                    </td>
+                    <td class="text-end text-muted-cell">{{ formatDate(row.completedAt) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else {
+        <div class="empty-card sb-card">
+          <i class="pi pi-history empty-icon"></i>
+          <h2 class="empty-heading">No completed assessments yet</h2>
+          <p class="empty-copy">
+            Complete any of the {{ quizService.tracks.length }} tracks across Low, Medium, High, or Progressive Full levels to log your score, accuracy rate, and duration here.
+          </p>
+          <a class="sb-btn sb-btn-primary" routerLink="/quiz/category">Choose a Track</a>
+        </div>
+      }
+    } @else if (activeTab() === 'certificates') {
+      @if (quizService.certificates().length > 0) {
+        <div class="certs-grid">
+          @for (cert of quizService.certificates(); track cert.id) {
+            <article class="cert-record-card sb-card">
+              <div class="cert-record-top">
+                <div class="sb-meta-line">
+                  <span>{{ cert.category }}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{{ quizService.getLevelShortLabel(cert.difficultyFilter) }}</span>
+                </div>
+                <span class="cert-verified-label">
+                  <i class="pi pi-verified" aria-hidden="true"></i>
+                  Verified {{ cert.accuracy }}%
+                </span>
+              </div>
+
+              <h3 class="cert-record-title">{{ cert.trackTitle }}</h3>
+              <p class="cert-record-recipient">
+                Issued to <strong>{{ cert.recipientName }}</strong>
+                <span aria-hidden="true">·</span>
+                <span>{{ formatShortDate(cert.issuedAt) }}</span>
+              </p>
+
+              <div class="cert-record-meta font-mono-tabular">
+                <span>Score: {{ cert.correctCount }}/{{ cert.totalQuestions }}</span>
+                <span aria-hidden="true">·</span>
+                <span>ID: {{ cert.verificationCode }}</span>
+              </div>
+
+              <div class="cert-record-actions">
+                <button type="button" class="sb-btn sb-btn-primary" (click)="openCertificate(cert)">
+                  <i class="pi pi-print"></i>
+                  View &amp; Print PDF
+                </button>
+
+                @if (pendingDeleteCertId() === cert.id) {
+                  <div class="cert-delete-confirm">
+                    <button type="button" class="remove-btn" (click)="cancelDeleteCertificate()">Cancel</button>
+                    <button type="button" class="remove-btn is-danger" (click)="confirmDeleteCertificate(cert.id)">Confirm</button>
+                  </div>
+                } @else {
+                  <button type="button" class="remove-btn" (click)="requestDeleteCertificate(cert.id)">
+                    Remove
+                  </button>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-card sb-card">
+          <i class="pi pi-verified empty-icon"></i>
+          <h2 class="empty-heading">No completion certificates yet</h2>
+          <p class="empty-copy">
+            Pass any of the {{ quizService.tracks.length }} assessment tracks with 70% accuracy or higher to unlock a printable, verifiable PDF credential.
+          </p>
+          <a class="sb-btn sb-btn-primary" routerLink="/quiz/category">Start an Assessment</a>
+        </div>
+      }
+    } @else {
+      @if (quizService.bookmarkedQuestions().length > 0) {
+        <div class="bookmarks-list">
+          @for (q of quizService.bookmarkedQuestions(); track q.id) {
+            <article class="bookmark-card sb-card">
+              <div class="bookmark-top">
+                <div class="sb-meta-line">
+                  <span>{{ quizService.getTrack(q.trackId).shortTitle }}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{{ q.topic }}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{{ q.difficulty }}</span>
+                </div>
+
+                <div class="bookmark-actions">
+                  <a
+                    class="practice-link"
+                    [routerLink]="quizService.getTrack(q.trackId).routePath"
+                    [queryParams]="{ mode: 'practice' }"
+                  >
+                    Practice Track
+                  </a>
+                  <button
+                    type="button"
+                    class="remove-btn"
+                    (click)="quizService.toggleBookmark(q.id)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+
+              <h3 class="bookmark-question">{{ q.question }}</h3>
+
+              @if (q.codeSnippet) {
+                <pre class="sb-code-block mb-3"><code>{{ q.codeSnippet }}</code></pre>
+              }
+
+              <div class="verified-answer-row">
+                <span class="verified-label">Verified Answer:</span>
+                <span class="verified-value">{{ q.correctAnswer }}</span>
+              </div>
+
+              <p class="bookmark-explanation">{{ q.explanation }}</p>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-card sb-card">
+          <i class="pi pi-bookmark empty-icon"></i>
+          <h2 class="empty-heading">No saved questions yet</h2>
+          <p class="empty-copy">
+            Click Bookmark (or press B) during any quiz or review session to save challenging questions here.
+          </p>
+          <a class="sb-btn sb-btn-primary" routerLink="/quiz/category">Explore Tracks</a>
+        </div>
+      }
+    }
+
+    @if (selectedCertificate(); as cert) {
+      <app-certificate-preview
+        [certificate]="cert"
+        (closed)="closeCertificate()"
+      />
+    }
+  </div>
+</section>

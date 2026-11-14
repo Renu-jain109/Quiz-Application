@@ -1,0 +1,389 @@
+<section class="runner-page">
+  <div class="sb-container runner-container">
+    <!-- Top Context Bar -->
+    <div class="runner-topbar">
+      <div class="topbar-left">
+        <a class="back-link" routerLink="/quiz/category">
+          <i class="pi pi-arrow-left"></i>
+          All Tracks
+        </a>
+        <div class="track-heading-group">
+          <h1 class="runner-track-title">
+            {{ isWeakDrillRun() ? 'Targeted Weak-Topic Drill' : track().title }}
+          </h1>
+          <div class="sb-meta-line">
+            <span>Role: {{ activeRoleLabel() }}</span>
+            <span aria-hidden="true">·</span>
+            <span>
+              {{
+                isWeakDrillRun()
+                  ? 'Practice Drill · Cross-Track Focus'
+                  : isMissedRetryRun()
+                    ? 'Targeted Missed-Item Review'
+                    : quizService.getLevelShortLabel(difficultyFilter())
+              }}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span class="tabular-nums">{{ activeQuestions().length }} Questions</span>
+            <span aria-hidden="true">·</span>
+            <span class="font-mono-tabular">Elapsed {{ formatDuration(totalElapsedSeconds()) }}</span>
+          </div>
+        </div>
+      </div>
+
+      @if (!isCompleted()) {
+        <div class="topbar-controls d-flex flex-wrap align-items-center gap-2">
+          @if (!isWeakDrillRun() && !isMissedRetryRun()) {
+            <div class="sb-segmented flex-wrap" role="group" aria-label="Select progressive question difficulty level">
+              @for (diff of difficulties; track diff) {
+                <button
+                  type="button"
+                  class="sb-segmented-btn"
+                  [class.is-active]="difficultyFilter() === diff"
+                  (click)="switchDifficulty(diff)"
+                >
+                  {{ quizService.getLevelShortLabel(diff) }}
+                </button>
+              }
+            </div>
+          }
+
+          <div class="sb-segmented" role="group" aria-label="Switch quiz pacing mode">
+            <button
+              type="button"
+              class="sb-segmented-btn"
+              [class.is-active]="mode() === 'timed'"
+              (click)="switchMode('timed')"
+            >
+              Timed (30s)
+            </button>
+            <button
+              type="button"
+              class="sb-segmented-btn"
+              [class.is-active]="mode() === 'practice'"
+              (click)="switchMode('practice')"
+            >
+              Practice
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (!isCompleted() && currentQuestion(); as q) {
+      <!-- Progress & Timer Card -->
+      <div class="progress-panel sb-card">
+        <div class="progress-header">
+          <span class="progress-counter font-mono-tabular">
+            Question {{ currentIndex() + 1 }} of {{ activeQuestions().length }}
+          </span>
+
+          <div class="progress-right-meta">
+            @if (mode() === 'timed') {
+              <div
+                class="timer-readout font-mono-tabular"
+                [class.is-low]="countdown() <= 10 && !answered() && !timedOut()"
+                [class.is-expired]="timedOut()"
+              >
+                <i class="pi pi-clock"></i>
+                @if (timedOut()) {
+                  <span>00:00 · Time Expired</span>
+                } @else if (countdown() <= 10 && !answered()) {
+                  <span>00:{{ countdown() < 10 ? '0' + countdown() : countdown() }} · Time Low</span>
+                } @else {
+                  <span>00:{{ countdown() < 10 ? '0' + countdown() : countdown() }}</span>
+                }
+              </div>
+            } @else {
+              <span class="untimed-label">Untimed Practice</span>
+            }
+
+            <button
+              type="button"
+              class="bookmark-btn"
+              [class.is-saved]="quizService.isBookmarked(q.id)"
+              (click)="quizService.toggleBookmark(q.id)"
+              [attr.aria-pressed]="quizService.isBookmarked(q.id)"
+              title="Bookmark question (Shortcut: B)"
+            >
+              <i class="pi" [class.pi-bookmark-fill]="quizService.isBookmarked(q.id)" [class.pi-bookmark]="!quizService.isBookmarked(q.id)"></i>
+              <span>{{ quizService.isBookmarked(q.id) ? 'Saved' : 'Bookmark' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Segmented Question Progress -->
+        <div class="segments-bar" role="progressbar" [attr.aria-valuenow]="currentIndex() + 1" [attr.aria-valuemax]="activeQuestions().length">
+          @for (item of activeQuestions(); track item.id; let i = $index) {
+            <span
+              class="segment-item"
+              [class.is-current]="getSegmentState(i) === 'current'"
+              [class.is-correct]="getSegmentState(i) === 'correct'"
+              [class.is-wrong]="getSegmentState(i) === 'wrong'"
+              [class.is-timeout]="getSegmentState(i) === 'timeout'"
+            ></span>
+          }
+        </div>
+
+        @if (mode() === 'timed') {
+          <div class="countdown-track">
+            <div
+              class="countdown-fill"
+              [class.is-low]="countdown() <= 10"
+              [style.width.%]="timerPercent()"
+            ></div>
+          </div>
+        }
+      </div>
+
+      <!-- Active Question Card -->
+      <article class="question-card sb-card">
+        <div class="sb-meta-line mb-3">
+          <span>{{ q.topic }}</span>
+          <span aria-hidden="true">·</span>
+          <span>{{ q.difficulty }}</span>
+          <span aria-hidden="true">·</span>
+          <span class="tabular-nums">Score {{ correctCount() }}/{{ activeQuestions().length }}</span>
+        </div>
+
+        <h2 class="question-prompt">{{ q.question }}</h2>
+
+        @if (q.codeSnippet) {
+          <pre class="sb-code-block mb-4"><code>{{ q.codeSnippet }}</code></pre>
+        }
+
+        <div class="options-list" role="radiogroup" [attr.aria-label]="q.question">
+          @for (option of q.options; track option; let i = $index) {
+            <button
+              type="button"
+              class="option-btn"
+              [disabled]="answered() || timedOut()"
+              [class.is-selected]="selectedOption() === option && !answered() && !timedOut()"
+              [class.is-correct]="(answered() || timedOut()) && option === q.correctAnswer"
+              [class.is-wrong]="answered() && selectedOption() === option && option !== q.correctAnswer"
+              (click)="selectOption(option)"
+            >
+              <span class="option-keycap font-mono-tabular">{{ optionLetters[i] }}</span>
+              <span class="option-text">{{ option }}</span>
+
+              @if ((answered() || timedOut()) && option === q.correctAnswer) {
+                <span class="option-status status-correct">
+                  <i class="pi pi-check-circle"></i>
+                  Correct
+                </span>
+              } @else if (answered() && selectedOption() === option && option !== q.correctAnswer) {
+                <span class="option-status status-wrong">
+                  <i class="pi pi-times-circle"></i>
+                  Your Pick
+                </span>
+              }
+            </button>
+          }
+        </div>
+
+        <!-- Inline Explanation & Feedback -->
+        @if (answered() || timedOut()) {
+          <div
+            class="feedback-panel"
+            [class.is-correct]="answered() && selectedOption() === q.correctAnswer"
+            [class.is-wrong]="(answered() && selectedOption() !== q.correctAnswer) || timedOut()"
+          >
+            <div class="feedback-header">
+              @if (timedOut()) {
+                <span class="feedback-status status-wrong">
+                  <i class="pi pi-clock"></i>
+                  Time Expired — Marked Incorrect
+                </span>
+              } @else if (selectedOption() === q.correctAnswer) {
+                <span class="feedback-status status-correct">
+                  <i class="pi pi-check-circle"></i>
+                  Verified Correct
+                </span>
+              } @else {
+                <span class="feedback-status status-wrong">
+                  <i class="pi pi-times-circle"></i>
+                  Incorrect Answer
+                </span>
+              }
+            </div>
+            <p class="feedback-explanation">{{ q.explanation }}</p>
+          </div>
+        }
+
+        <!-- Footer Controls -->
+        <div class="question-actions">
+          <span class="keyboard-hint">
+            Keys: <kbd>1</kbd>–<kbd>4</kbd> select · <kbd>Enter</kbd> submit/next · <kbd>B</kbd> save
+          </span>
+
+          <div class="action-buttons">
+            @if (!answered() && !timedOut()) {
+              <button
+                type="button"
+                class="sb-btn sb-btn-primary"
+                [disabled]="!selectedOption()"
+                (click)="submitAnswer()"
+              >
+                Submit Answer
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="sb-btn sb-btn-primary"
+                (click)="goToNext()"
+              >
+                {{ currentIndex() + 1 < activeQuestions().length ? 'Next Question' : 'View Results' }}
+                <i class="pi pi-arrow-right"></i>
+              </button>
+            }
+          </div>
+        </div>
+      </article>
+    } @else if (isCompleted()) {
+      <!-- Assessment Summary & Review -->
+      <div class="summary-shell">
+        <div class="summary-banner sb-card" [class.is-passed]="passed()" [class.is-failed]="!passed()">
+          <div class="banner-copy">
+            <div class="banner-status-line" [class.status-correct]="passed()" [class.status-wrong]="!passed()">
+              <i class="pi" [class.pi-check-circle]="passed()" [class.pi-exclamation-triangle]="!passed()"></i>
+              <span>{{ passed() ? 'Assessment Passed' : 'Below Benchmark (70% Required)' }}</span>
+            </div>
+            <h2 class="summary-headline">
+              @if (isWeakDrillRun()) {
+                {{ passed() ? 'Weak-topic mastery improved.' : 'Continue practicing focus topics.' }}
+              } @else {
+                {{ passed() ? 'Strong command of ' + track().shortTitle + '.' : 'Review missed concepts in ' + track().shortTitle + '.' }}
+              }
+            </h2>
+            <p class="summary-subcopy">
+              Completed {{ activeQuestions().length }} questions in {{ formatDuration(totalElapsedSeconds()) }} under {{ mode() === 'timed' ? 'Timed Assessment' : 'Practice' }} mode.
+            </p>
+          </div>
+
+          <div class="summary-actions">
+            @if (earnedCertificate()) {
+              <button type="button" class="sb-btn sb-btn-primary" (click)="openCertificateModal()">
+                <i class="pi pi-verified"></i>
+                View &amp; Print Certificate
+              </button>
+            }
+            @if (missedQuestions().length > 0) {
+              <button
+                type="button"
+                class="sb-btn"
+                [class.sb-btn-primary]="!earnedCertificate()"
+                [class.sb-btn-secondary]="!!earnedCertificate()"
+                (click)="retryMissedOnly()"
+              >
+                Retry Missed ({{ missedQuestions().length }})
+              </button>
+            }
+            <button type="button" class="sb-btn sb-btn-secondary" (click)="retryFullTrack()">
+              {{ isWeakDrillRun() ? 'Run Another Drill' : 'Retake Full Track' }}
+            </button>
+            <button type="button" class="sb-btn sb-btn-secondary" (click)="exportReport()">
+              <i class="pi pi-download"></i>
+              Export JSON
+            </button>
+            <a class="sb-btn sb-btn-ghost" routerLink="/history">History</a>
+          </div>
+        </div>
+
+        <!-- 4-column Tabular Metrics -->
+        <div class="summary-kpis sb-card">
+          <div class="summary-kpi-cell">
+            <span class="summary-kpi-value font-mono-tabular">{{ correctCount() }} / {{ activeQuestions().length }}</span>
+            <span class="summary-kpi-label">Correct Answers</span>
+          </div>
+          <div class="summary-kpi-cell">
+            <span class="summary-kpi-value font-mono-tabular">{{ accuracy() }}%</span>
+            <span class="summary-kpi-label">Accuracy Rate</span>
+          </div>
+          <div class="summary-kpi-cell">
+            <span class="summary-kpi-value font-mono-tabular">{{ formatDuration(totalElapsedSeconds()) }}</span>
+            <span class="summary-kpi-label">Total Duration</span>
+          </div>
+          <div class="summary-kpi-cell">
+            <span class="summary-kpi-value font-mono-tabular">{{ wrongCount() + skippedCount() }}</span>
+            <span class="summary-kpi-label">Missed / Timed Out</span>
+          </div>
+        </div>
+
+        <!-- Question-by-Question Review -->
+        <div class="review-section">
+          <h3 class="review-section-title">Question-by-Question Review</h3>
+          <div class="review-list">
+            @for (item of outcomes(); track item.question.id; let idx = $index) {
+              <article class="review-card sb-card">
+                <div class="review-card-top">
+                  <div class="sb-meta-line">
+                    <span class="font-mono-tabular">Q{{ idx + 1 }}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ item.question.topic }}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ item.question.difficulty }}</span>
+                  </div>
+
+                  <div class="review-top-right">
+                    @if (item.status === 'correct') {
+                      <span class="review-status status-correct">
+                        <i class="pi pi-check-circle"></i> Correct
+                      </span>
+                    } @else if (item.status === 'timeout') {
+                      <span class="review-status status-wrong">
+                        <i class="pi pi-clock"></i> Time Expired
+                      </span>
+                    } @else {
+                      <span class="review-status status-wrong">
+                        <i class="pi pi-times-circle"></i> Incorrect
+                      </span>
+                    }
+
+                    <button
+                      type="button"
+                      class="bookmark-btn"
+                      [class.is-saved]="quizService.isBookmarked(item.question.id)"
+                      (click)="quizService.toggleBookmark(item.question.id)"
+                    >
+                      <i class="pi" [class.pi-bookmark-fill]="quizService.isBookmarked(item.question.id)" [class.pi-bookmark]="!quizService.isBookmarked(item.question.id)"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <h4 class="review-question">{{ item.question.question }}</h4>
+
+                @if (item.question.codeSnippet) {
+                  <pre class="sb-code-block mb-3"><code>{{ item.question.codeSnippet }}</code></pre>
+                }
+
+                <div class="review-answers">
+                  @if (item.status !== 'correct') {
+                    <div class="review-answer-row">
+                      <span class="answer-label">Your Answer:</span>
+                      <span class="answer-val status-wrong">
+                        {{ item.selectedOption ?? 'No selection (Timer expired)' }}
+                      </span>
+                    </div>
+                  }
+                  <div class="review-answer-row">
+                    <span class="answer-label">Verified Answer:</span>
+                    <span class="answer-val status-correct">{{ item.question.correctAnswer }}</span>
+                  </div>
+                </div>
+
+                <p class="review-explanation">{{ item.question.explanation }}</p>
+              </article>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showCertificateModal() && earnedCertificate(); as cert) {
+      <app-certificate-preview
+        [certificate]="cert"
+        (closed)="closeCertificateModal()"
+      />
+    }
+  </div>
+</section>
