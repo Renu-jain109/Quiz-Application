@@ -16,10 +16,10 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render brand wordmark SyntaxBench', () => {
+  it('should render brand wordmark QuizForge', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.brand-wordmark')?.textContent).toContain('SyntaxBench');
+    expect(compiled.querySelector('.brand-wordmark')?.textContent).toContain('QuizForge');
   });
 });

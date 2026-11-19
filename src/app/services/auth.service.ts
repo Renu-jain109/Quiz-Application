@@ -40,7 +40,7 @@ import {
   testFirestoreConnection,
 } from './firebase-client';
 
-const STORAGE_LOCAL_PROFILE_KEY = 'syntaxbench_local_profile_v1';
+const STORAGE_LOCAL_PROFILE_KEY = 'quizforge_local_profile_v1';
 
 export interface ProfileDraft {
   email: string;
@@ -146,7 +146,7 @@ export class AuthService {
       const existing = await this.fetchProfileFromFirestore(user.uid);
       const sanitizedProfile: UserProfile = {
         uid: user.uid,
-        email: (draft?.email?.trim() || user.email || existing?.email || 'learner@syntaxbench.dev').slice(
+        email: (draft?.email?.trim() || user.email || existing?.email || 'learner@quizforge.dev').slice(
           0,
           120
         ),
@@ -469,7 +469,7 @@ export class AuthService {
         }
       : {
           uid: user.uid,
-          email: (user.email || localDraft?.email || 'learner@syntaxbench.dev').slice(0, 120),
+          email: (user.email || localDraft?.email || 'learner@quizforge.dev').slice(0, 120),
           fullName: (user.displayName || localDraft?.fullName || 'Software Engineer').slice(0, 80),
           roleId: localDraft?.roleId ?? 'fullstack',
           organization: localDraft?.organization ?? '',

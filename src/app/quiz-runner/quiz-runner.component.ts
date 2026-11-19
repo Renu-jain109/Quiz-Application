@@ -319,7 +319,7 @@ export class QuizRunnerComponent implements OnInit, OnDestroy {
   exportReport(): void {
     if (typeof window === 'undefined') return;
     const payload = {
-      platform: 'SyntaxBench',
+      platform: 'QuizForge',
       exportedAt: new Date().toISOString(),
       track: this.track().title,
       role: this.activeRoleLabel(),
@@ -345,7 +345,7 @@ export class QuizRunnerComponent implements OnInit, OnDestroy {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `syntaxbench-${this.track().id}-report.json`;
+    link.download = `quizforge-${this.track().id}-report.json`;
     link.click();
     URL.revokeObjectURL(url);
   }

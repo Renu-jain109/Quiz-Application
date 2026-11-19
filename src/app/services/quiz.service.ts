@@ -42,12 +42,12 @@ export type {
 
 export { LEVEL_QUESTION_COUNTS };
 
-const STORAGE_ATTEMPTS_KEY = 'syntaxbench_attempts_v1';
-const STORAGE_BOOKMARKS_KEY = 'syntaxbench_bookmarks_v1';
-const STORAGE_CERTIFICATES_KEY = 'syntaxbench_certificates_v1';
-const STORAGE_TOPIC_STATS_KEY = 'syntaxbench_topic_stats_v1';
-const STORAGE_THEME_KEY = 'syntaxbench_theme_v1';
-const STORAGE_ROLE_KEY = 'syntaxbench_role_v1';
+const STORAGE_ATTEMPTS_KEY = 'quizforge_attempts_v1';
+const STORAGE_BOOKMARKS_KEY = 'quizforge_bookmarks_v1';
+const STORAGE_CERTIFICATES_KEY = 'quizforge_certificates_v1';
+const STORAGE_TOPIC_STATS_KEY = 'quizforge_topic_stats_v1';
+const STORAGE_THEME_KEY = 'quizforge_theme_v1';
+const STORAGE_ROLE_KEY = 'quizforge_role_v1';
 
 const DIFFICULTY_RANK: Record<DifficultyFilter, number> = {
   Low: 1,
